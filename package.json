@@ -1,11 +1,7 @@
 {
-  "name": "eth_option",
-  "version": "1.0.0",
-  "description": "## Preface",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
+  "name": "eth_option_ui",
+  "version": "0.0.1",
+  "description": "UI for eth_option",
   "scripts": {
     "config-ropsten": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp deployment/ropsten/* ${TARGET_DIR}/",
     "start": "react-scripts start",
@@ -15,19 +11,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mxn/eth_option.git"
+    "url": "git+https://github.com/mxn/eth_option_ui.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mxn/eth_option/issues"
+    "url": "https://github.com/mxn/eth_option_ui/issues"
   },
-  "homepage": "https://github.com/mxn/eth_option#readme",
+  "homepage": "https://github.com/mxn/eth_option_ui#readme",
   "dependencies": {
-    "bootstrap": "^4.0.0",
     "dotenv": "^5.0.1",
-    "jquery": "^3.3.1",
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
     "pubsub-js": "^1.6.0",
