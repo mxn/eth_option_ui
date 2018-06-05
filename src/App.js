@@ -26,7 +26,7 @@ export default class App extends Component {
     if (this.state.basisToken == null || this.state.underlying == null) {
       return (
         <Grid>
-          <Row><h1 className="App-title">E-Opts</h1></Row>
+          <Row><h1 className="App-title">Crypto Token Options</h1></Row>
           <Row><span>  Loading...</span></Row>
         </Grid>
       )
@@ -35,7 +35,7 @@ export default class App extends Component {
       <Web3Provider>
       <Grid>
 
-        <Row><h1 className="App-title">E-Opts</h1></Row>
+        <Row><h1 className="App-title">Crypto Token Options</h1></Row>
         <Row>
           <Tabs id="main_tabs">
             <Tab eventKey="1" title="Options' Operations">
