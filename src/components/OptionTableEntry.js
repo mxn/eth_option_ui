@@ -42,9 +42,9 @@ export default class OptionTableEntry extends Component {
       <Panel  expanded={this.state.detailExpanded} onToggle={() => null}>
         <Panel.Heading>
           <Row>
-            <Col sm={2}><Button type="button" bsStyle="info"
+            <Col sm={2}><Button type="button"
               onClick={() => this.setState({
-                detailExpanded: !this.state.detailExpanded })}>...</Button>
+                detailExpanded: !this.state.detailExpanded })}>{this.state.detailExpanded ? "-" : "+"}</Button>
             </Col>
             <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.args.strike)}</Col>
             <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.args.underlyingQty)}</Col>
