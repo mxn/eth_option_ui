@@ -14,6 +14,8 @@ export const TOPIC_AFFECTED_BALANCES = 'affected_balances'
 
 var web3, erc20
 
+const kovanDaiAddress = "0xc4375b7de8af5a38a93548eb8453a498222c4ff2"
+
 const tokenToNames = {
   //TODO addresses from mainnet and testnet
 }
@@ -71,14 +73,25 @@ const getNetworkId = () => {
 export const  getWethInstance =  async () => {
   let netId = await getNetworkId()
   //console.log(netId)
-  if (Number(netId) === 3) {
-    return getContractInstance(jsonWeth, "0xc778417e063141139fce010982780140aa0cd5ab")
+  switch (Number(netId)) {
+    case 3: //ropsten
+      return getContractInstance(jsonWeth, "0xc778417e063141139fce010982780140aa0cd5ab")
+    case 42: //kovan
+      return getContractInstance(jsonWeth, "0xd0a1e359811322d97991e03f863a0c30c2cf029c")
+    default:
+      return getContractInstance(jsonWeth)
   }
-  return getContractInstance(jsonWeth)
 }
 
-export const  getDaiInstance = () => {
-  return getContractInstance(jsonDai)
+export const getDaiInstance = async () => {
+  let netId = await getNetworkId()
+  //console.log(netId)
+  switch (Number(netId)) {
+    case 42: //kovan
+      return getContractInstance(jsonDai, kovanDaiAddress)
+    default:
+      return getContractInstance(jsonDai)
+  }
 }
 
 export const getAccount = () => {
@@ -89,8 +102,17 @@ export const getErc20At = async (token) => {
   return getContractInstance(jsonERC20, token)
 }
 
-export const getOptionFactoryInstance = () => {
-  return getContractInstance(jsonOptionFactory)
+export const getOptionFactoryInstance = async () => {
+  let netId = await getNetworkId()
+  //console.log(netId)
+  switch (Number(netId)) {
+    case 3: //ropsten
+      return getContractInstance(jsonOptionFactory, "0xb7b68150022054daf980461a99d19d807afa8ca0")
+    case 42: //kovan
+      return getContractInstance(jsonOptionFactory, "0xc07893435202f6a3434bd5afd36c0d415a8a0c90")
+    default:
+      return getContractInstance(jsonOptionFactory)
+    }
 }
 
 export const getOptionPairInstance = (address) => {
@@ -143,6 +165,7 @@ export const setStatePropFromEvent = (ev, objToSet) => {
 const initTokenNames = async () => {
       tokenToNames[(await getWethInstance()).address] = "WETH"
       tokenToNames[(await getDaiInstance()).address] = "MockDAI"
+      tokenToNames[kovanDaiAddress] = "DAI"
 }
 
 
