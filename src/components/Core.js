@@ -70,6 +70,19 @@ export const getNetworkId = () => {
   return  promisify(cb => getWeb3().version.getNetwork(cb))
 }
 
+export const  getEtherscanHost = async () => {
+  switch (Number(await getNetworkId())) {
+    case 1: //ropsten
+      return "etherscan.io"
+    case 3: //ropsten
+      return "ropsten.etherscan.io"
+    case 42: //kovan
+      return "kovan.etherscan.io"
+    default:
+      return null
+    }
+}
+
 export const  getWethInstance =  async () => {
   let netId = await getNetworkId()
   //console.log(netId)

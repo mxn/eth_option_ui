@@ -1,5 +1,6 @@
 import Approval from './Approval'
-import { getBalance, getDisplayTokenName, TOPIC_AFFECTED_BALANCES} from './Core'
+import { getBalance, getDisplayTokenName, getEtherscanHost,
+  TOPIC_AFFECTED_BALANCES} from './Core'
 
 import PubSub from 'pubsub-js'
 import React from 'react'
@@ -31,6 +32,7 @@ export default class TokenDetail extends React.Component {
   }
 
   async componentDidMount() {
+    this.setState({etherscanHost: await getEtherscanHost()})
     this.updateBalance()
   }
 
@@ -42,11 +44,19 @@ export default class TokenDetail extends React.Component {
     if (this.props.token === null || this.state.balance === null || this.props.targetApproval === null ) {
       return <div>Loading...</div>
     }
+    let Token = (props) => {
+      if (this.state.etherscanHost) {
+        return <a
+        href={`https:${this.state.etherscanHost}/address/${this.props.token}`}
+        target="_blank">{getDisplayTokenName(this.props.token)}</a>
+      }
+      return getDisplayTokenName(this.props.token)
+    }
     return (
       <Grid>
         <Row>
           <Col sm={2}  componentClass={ControlLabel}>{this.props.label}</Col>
-          <Col sm={8}> {getDisplayTokenName(this.props.token)}</Col>
+          <Col sm={8}> <Token/> </Col>
           <Col sm={2}> {Number(this.state.balance).toFixed(5)}</Col>
         </Row>
         <Row>
