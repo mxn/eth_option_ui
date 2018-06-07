@@ -66,7 +66,7 @@ const getContractInstance = async(json, address) => {
   return contract.at(deployedAddress)
 }
 
-const getNetworkId = () => {
+export const getNetworkId = () => {
   return  promisify(cb => getWeb3().version.getNetwork(cb))
 }
 
@@ -94,8 +94,9 @@ export const getDaiInstance = async () => {
   }
 }
 
-export const getAccount = () => {
-  return getWeb3().eth.accounts[0]
+export const  getAccount = async () => {
+  let accounts =  await promisify(cb=>getWeb3().eth.getAccounts(cb))
+  return accounts[0]
 }
 
 export const getErc20At = async (token) => {

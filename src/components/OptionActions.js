@@ -136,7 +136,7 @@ export default class OptionActions extends Component {
        <InputGroup>
          <FormControl type="number" value={this.state.value} onChange={(ev) => this.setState({value: ev.target.value})}/>
            <DropdownButton
-             componentClass={InputGroup.Button} bsStyle={this.state.isLoading ? "warning" : "primary"}
+             componentClass={InputGroup.Button} bsStyle={this.state.isLoading ? "warning" : "success"}
              id={`dropdown_${this.props.optionPairAddress}`}
              key={`dropdown_${this.props.optionPairAddress}`}
              onSelect={(eventKey) => this.onSelect(eventKey)}

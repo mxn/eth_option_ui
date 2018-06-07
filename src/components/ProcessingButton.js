@@ -15,7 +15,7 @@ export default class ProcessingButton extends Component {
 
   render() {
     return (<Button className="Button-action"
-    bsStyle={this.state.isProcessing ? "warning" : "primary"}
+    bsStyle={this.state.isProcessing ? "warning" : "success"}
     disabled={this.state.isProcessing || this.props.disabled}
     onClick={() => this.onClick()}> {this.state.isProcessing ? "Processing":
     this.props.button } </Button>)
