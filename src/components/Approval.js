@@ -1,5 +1,5 @@
 import {getWeb3, DECIMAL_FACTOR, getErc20At, getAllowance, promisify,
-  getReceipt, getDefaultTransObj} from './Core'
+  getReceipt, getDefaultTransObj, publishTokenMutation} from './Core'
 import NumberEntryGroup from './NumberEntryGroup'
 import React, {Component} from 'react'
 
@@ -31,6 +31,7 @@ export default class Approval extends Component {
 
     await getReceipt(trans)
     await  this.updateAllowance()
+    publishTokenMutation([this.props.token])
   }
 
   render () {

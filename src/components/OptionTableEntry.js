@@ -53,7 +53,9 @@ export default class OptionTableEntry extends Component {
         <Panel.Collapse>
           <TokenDetail label="Option" token={this.state.optionAddress} targetApproval={this.state.optionPairAddress}/>
           <TokenDetail label="Anti-Option" token={this.state.antiOptionAddress} targetApproval={this.state.optionPairAddress}/>
-          <OptionActions optionPairAddress={this.state.optionPairAddress}/>
+          <Col sm={7}>
+            <OptionActions optionPairAddress={this.state.optionPairAddress}/>
+          </Col>
         </Panel.Collapse>
       </Panel>
     </PanelGroup>)

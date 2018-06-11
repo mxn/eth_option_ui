@@ -65,7 +65,8 @@ export default class App extends Component {
 
   async isValidNetwork () {
     let netId = await getNetworkId()
-    return ([3, 42].indexOf(Number(netId)) >= 0)
+    console.log("netId: " + netId)
+    return ([3, 42, 5777].indexOf(Number(netId)) >= 0)
   }
 
   async componentWillMount() {

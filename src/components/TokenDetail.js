@@ -60,7 +60,7 @@ export default class TokenDetail extends React.Component {
           <Col sm={2}> {Number(this.state.balance).toFixed(5)}</Col>
         </Row>
         <Row>
-          <Col sm={10}>
+          <Col sm={6}>
             <Approval token={this.props.token} targetContract={this.props.targetApproval}/>
           </Col>
         </Row>
