@@ -1,7 +1,7 @@
 import {getBalance, getOptionFactoryInstance,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
-  getAllowance}  from './Core'
+  getAllowance, getFeeCalculatorInstance, getTokenName}  from './Core'
 
 import React, { Component } from 'react'
 import PubSub from 'pubsub-js'
@@ -81,6 +81,14 @@ export default class OptionActions extends Component {
     this.setState({optionPairDetails: res})
   }
 
+  async getFee() {
+    let amountToWrite = this.state.value * DECIMAL_FACTOR
+    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
+    let feeCalcAddress = await promisify(cb => optionPair.feeCalculator(cb))
+    let feeCalculator = await getFeeCalculatorInstance(feeCalcAddress)
+    return  promisify(cb => feeCalculator.calcFee(feeCalcAddress, amountToWrite, cb))
+  }
+
   async getAvailableActions() {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
     let expireTime = await promisify(cb => optionPair.expireTime.call(cb))
@@ -97,7 +105,7 @@ export default class OptionActions extends Component {
       .filter((action) => {
          switch(action) {
            case WRITE:
-            return this.state.balances.underlying > 0
+            return true
            case EXERCISE:
             return this.state.balances.tokenOption > 0 &&
               this.state.balances.basisToken > 0
@@ -112,7 +120,11 @@ export default class OptionActions extends Component {
        })
   }
 
-  getWriteCaution() {
+  async getWriteCaution() {
+    var feeTokenAddress, fee
+    [feeTokenAddress, fee] = await this.getFee()
+    let feeDecimal = fee.dividedBy(DECIMAL_FACTOR).toNumber()
+    let feeTokenName = await getTokenName(feeTokenAddress)
     let conditions = [
       [this.state.balances.underlying >= this.state.value *
         this.state.optionPairDetails.underlyingQty,
@@ -128,7 +140,7 @@ export default class OptionActions extends Component {
     if (conditions.every(el => el[0])) {
       return {
         title: "Write Option",
-        body: "You are about to write and lock underlaying and pay fee"
+        body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlaying and pay fee ${feeDecimal} ${feeTokenName}`
       }
     }
     return {
@@ -147,13 +159,14 @@ export default class OptionActions extends Component {
       publishTokenMutation(mutatedAddresses)
       this.setState({isLoading: false, value: 0})
     }
+    let makeWithCaution =  (caution) => {
+      if (caution) caution.onOk = () => fnToExec()
+      this.setState({
+      caution: caution})
+    }
     switch (ek) {
       case WRITE:
-          let caution = this.getWriteCaution()
-          if (caution) caution.onOk = () => fnToExec()
-          this.setState({
-          caution: caution
-        })
+          makeWithCaution(await this.getWriteCaution())
         break
       default: fnToExec()
     }
@@ -195,6 +208,9 @@ export default class OptionActions extends Component {
     if (!this.state.caution) {
       return null
     }
+    console.log(this.state)
+
+    console.log(this.state.caution)
     return(
       <Modal.Dialog bsStyle="danger">
         <Modal.Header>

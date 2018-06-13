@@ -9,6 +9,7 @@ const jsonERC20 = require("solidity-contracts/ERC20.json")
 const jsonTokenOption = require("solidity-contracts/TokenOption.json")
 const jsonTokenAntiOption = require("solidity-contracts/TokenOption.json")
 const jsonOptionPair = require("solidity-contracts/OptionPair.json")
+const jsonFeeCalculator = require("solidity-contracts/IFeeCalculator.json")
 
 export const TOPIC_AFFECTED_BALANCES = 'affected_balances'
 
@@ -139,6 +140,10 @@ export const getTokenOptionInstance = (address) => {
 
 export const getTokenAntiOptionInstance = (address) => {
   return getContractInstance(jsonTokenAntiOption, address)
+}
+
+export const getFeeCalculatorInstance = (address) => {
+  return getContractInstance(jsonFeeCalculator, address)
 }
 
 export const onMined = (transNo, callback)  => {
