@@ -144,7 +144,84 @@ export default class OptionActions extends Component {
       }
     }
     return {
-      title: "Error",
+      title: "You cannot write requesed amount!",
+      isError: true,
+      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
+    }
+  }
+
+  getAnnihilateCaution() {
+    let conditions = [
+      [this.state.balances.tokenOption >= this.state.value,
+      `Not enough balance (${this.state.balances.tokenOption},
+        need ${this.state.value})`],
+      [this.state.balances.tokenAntiOption >= this.state.value,
+        `Not enough balance (${this.state.balances.tokenAntiOption},
+          need  ${this.state.value}) of Anti-Option tokens`],
+      [this.state.allowances.tokenOption >= this.state.value,
+        `Not enough allowance (${this.state.allowances.tokenOption}
+          , need  ${this.state.value})
+          of Option tokens`],
+      [this.state.allowances.tokenOption >= this.state.value,
+          `Not enough allowance (${this.state.allowances.tokenAntiOption}
+            , need  ${this.state.value})
+            of Anti-Option tokens`]
+    ]
+    if (conditions.every(el => el[0])) {
+      return null
+    }
+    return {
+      title: "You cannot annihilate requested amount!",
+      isError: true,
+      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
+    }
+  }
+
+  getExerciseCaution() {
+    console.log("getExerciseCaution")
+    console.log(this.state.optionPairDetails)
+    let conditions = [
+      [this.state.balances.tokenOption >= this.state.value,
+      `Not enough balance (${this.state.balances.tokenOption},
+        need ${this.state.value})`],
+      [this.state.allowances.tokenOption >= this.state.value,
+        `Not enough allowance (${this.state.allowances.tokenOption}
+          , need  ${this.state.value})
+          of Option tokens`],
+      [this.state.allowances.basisToken >= this.state.value * this.state.optionPairDetails.strike,
+        `Not enough allowance (${this.state.allowances.basisToken}
+          , need  ${this.state.value * this.state.optionPairDetails.strike})
+          of quotation token`],
+      [this.state.balances.basisToken >= this.state.value * this.state.optionPairDetails.strike,
+        `Not enough balance (${this.state.balances.basisToken}
+          , need  ${this.state.value * this.state.optionPairDetails.strike})
+          of quotation tokens`]
+    ]
+    if (conditions.every(el => el[0])) {
+      return null
+    }
+    return {
+      title: "You cannot exercise requested amount!",
+      isError: true,
+      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
+    }
+  }
+
+  getWithdrawCaution() {
+    let conditions = [
+      [this.state.balances.tokenAntiOption >= this.state.value,
+      `Not enough balance (${this.state.balances.tokenAntiOption},
+        need ${this.state.value})`],
+      [this.state.allowances.tokenAntiOption >= this.state.value,
+        `Not enough allowance (${this.state.allowances.tokenAntiOption}
+          , need  ${this.state.value})
+          of Option tokens`]
+    ]
+    if (conditions.every(el => el[0])) {
+      return null
+    }
+    return {
+      title: "You cannot withdraw requested amount!",
       isError: true,
       body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
     }
@@ -160,14 +237,25 @@ export default class OptionActions extends Component {
       this.setState({isLoading: false, value: 0})
     }
     let makeWithCaution =  (caution) => {
-      if (caution) caution.onOk = () => fnToExec()
-      this.setState({
-      caution: caution})
+      if (caution) {
+        console.log("Caution is detected")
+        caution.onOk = () => fnToExec()
+      }
+      this.setState({caution: caution})
+      if (!caution) {
+        fnToExec()
+      }
     }
     switch (ek) {
       case WRITE:
-          makeWithCaution(await this.getWriteCaution())
+        makeWithCaution(await this.getWriteCaution())
         break
+      case ANNIHILATE:
+        makeWithCaution(this.getAnnihilateCaution())
+        break
+      case EXERCISE:
+          makeWithCaution(this.getExerciseCaution())
+          break
       default: fnToExec()
     }
   }
