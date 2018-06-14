@@ -6,7 +6,37 @@ import OptionTable from './components/OptionTable.js'
 import React, { Component } from 'react'
 import './App.css'
 import {Web3Provider } from 'react-web3';
-import {Grid, Row, Tabs, Tab, Alert} from 'react-bootstrap'
+import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem} from 'react-bootstrap'
+import {HashRouter, Switch, Route, Link} from 'react-router-dom'
+import {LinkContainer, IndexedLinkContainer} from 'react-router-bootstrap'
+
+const MainMenu = () => (
+  <Navbar>
+    <Nav>
+    <LinkContainer to="/home">
+      <NavItem eventKey={1}><strong>Home</strong></NavItem>
+    </LinkContainer>
+    <LinkContainer to="/app">
+      <NavItem eventKey={2}>Application</NavItem>
+    </LinkContainer>
+    <LinkContainer to="/help">
+      <NavItem eventKey={3}>Help</NavItem>
+    </LinkContainer>
+    </Nav>
+  </Navbar>
+)
+
+const Home = () => (
+  <div>
+    Welcome to crypto option creation
+  </div>
+)
+
+const Help = () => (
+  <div>
+    See Demo on Youtube
+  </div>
+)
 
 
 class Content extends Component {
@@ -31,7 +61,7 @@ class Content extends Component {
       return <Row><span>Loading...</span></Row>
     } else  {
       return (
-        <div>
+        <Grid>
           <Row>Account: {this.state.account} </Row>
           <Tabs id="main_tabs">
             <Tab eventKey="1" title="Options' Operations">
@@ -47,13 +77,13 @@ class Content extends Component {
                 basisToken={this.props.basisToken}/>
             </Tab>
           </Tabs>
-        </div>
+        </Grid>
       )
     }
   }
 }
 
-export default class App extends Component {
+export class OptionApp extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -82,6 +112,8 @@ export default class App extends Component {
   }
 
   render() {
+    console.log("render OptionApp")
+
     return (
       <Grid>
         <Row><h1 className="App-title">Crypto Token Options</h1></Row>
@@ -96,4 +128,26 @@ export default class App extends Component {
     )
 
   }
+}
+
+const MainRoutes = () => (
+  <Switch>
+    <Route exact path='/' component={Home}/>
+    <Route exact path='/home' component={Home}/>
+    <Route exact path='/app' component={OptionApp}/>
+    <Route exact path='/help' component={Help}/>
+  </Switch>
+)
+
+export default class App extends Component {
+  render () {
+      return (
+            <HashRouter>
+              <div>
+                <MainMenu/>
+                <MainRoutes/>
+              </div>
+            </HashRouter>
+      )
+    }
 }
