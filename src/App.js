@@ -7,8 +7,8 @@ import React, { Component } from 'react'
 import './App.css'
 import {Web3Provider } from 'react-web3';
 import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem} from 'react-bootstrap'
-import {HashRouter, Switch, Route, Link} from 'react-router-dom'
-import {LinkContainer, IndexedLinkContainer} from 'react-router-bootstrap'
+import {HashRouter, Switch, Route} from 'react-router-dom'
+import {LinkContainer} from 'react-router-bootstrap'
 
 const MainMenu = () => (
   <Navbar>
@@ -28,7 +28,13 @@ const MainMenu = () => (
 
 const Home = () => (
   <div>
-    Welcome to crypto option creation
+    <div>Welcome to crypto option creation</div>
+    <div>The goal of the project is possibility to create options, which
+    are ERC20 tokens based, and themselves are ERC20-tokens.
+    The ERC20 compatibility allows for the options to be easily traded on
+    the exchanges
+    </div>
+
   </div>
 )
 
