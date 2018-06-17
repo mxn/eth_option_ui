@@ -30,6 +30,11 @@
   width: 100px;
 }
 
+.show-bg-img {
+    background-image: url('/stock-1863880_1280_blured.jpg');
+    opacity: 0.8;
+}
+
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

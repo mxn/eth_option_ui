@@ -10,7 +10,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "deploy-s3": "rm -rf build/; npm run build && aws s3 sync build/ s3://www.erc20-options.com"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/mxn/eth_option_ui/issues"
   },
-  "homepage": "https://mxn.github.io/eth_option_ui/",
+  "homepage": "http://www.erc20-options.com/",
   "dependencies": {
     "dotenv": "^5.0.1",
     "lodash": "^4.17.10",

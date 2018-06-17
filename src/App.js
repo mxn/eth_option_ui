@@ -6,7 +6,8 @@ import OptionTable from './components/OptionTable.js'
 import React, { Component } from 'react'
 import './App.css'
 import {Web3Provider } from 'react-web3';
-import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem} from 'react-bootstrap'
+import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem,
+  Jumbotron} from 'react-bootstrap'
 import {HashRouter, Switch, Route} from 'react-router-dom'
 import {LinkContainer} from 'react-router-bootstrap'
 
@@ -27,20 +28,38 @@ const MainMenu = () => (
 )
 
 const Home = () => (
-  <div>
-    <div>Welcome to crypto option creation</div>
-    <div>The goal of the project is possibility to create options, which
-    are ERC20 tokens based, and themselves are ERC20-tokens.
-    The ERC20 compatibility allows for the options to be easily traded on
-    the exchanges
-    </div>
-
-  </div>
+  <Jumbotron className="show-bg-img">
+    <p>Welcome to crypto option creation</p>
+      <p>The goal of the project is possibility to create <a href="https://en.wikipedia.org/wiki/Option_(finance)" target="_blank" rel="noreferrer noopener">option</a> cntacts,
+        similar to stock options, which
+        are ERC20 tokens based, and themselves are ERC20-tokens.
+        The ERC20 compatibility allows the options to be easily traded on
+        the exchanges
+      </p>
+      <p>The more details about it can be read in the &nbsp;
+        <a href="https://mxn.github.io/eth_option/" target="_blank" rel="noreferrer noopener">concept document</a>
+      </p>
+      <p>
+        Currently you can play demo on Application tab. Please use kovan network.
+      </p>
+      <p>
+        To get some ETH one can use <a href="https://github.com/kovan-testnet/faucet" target="_blank" rel="noreferrer noopener">Kovan Faucet.</a>
+      </p>
+      <p>
+        To get some DAO one can use <a href="https://oasis.direct/" target="_blank" rel="noreferrer noopener">Oasis Direct</a>
+      </p>
+    </Jumbotron>
 )
 
 const Help = () => (
   <div>
-    See Demo on Youtube
+  <Jumbotron>
+    <p>
+    See screencasts on <a href="https://www.youtube.com/channel/UC9ib9my1AgtQVz6uZaIw8Ww" target="_blank" rel="noreferrer noopener">erc20-option channel</a>
+    </p>
+  </Jumbotron>
+
+
   </div>
 )
 
