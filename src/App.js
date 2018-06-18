@@ -1,4 +1,7 @@
-import {getWethInstance, getDaiInstance, getNetworkId, getAccount} from './components/Core.js'
+import {getWethInstance, getDaiInstance, getNetworkId,
+  getAccount} from './components/Core.js'
+import Home from './components/Home.js'
+import {ConceptLink} from './components/Commons.js'
 import WethConvertor from './components/WethConvertor.js'
 import OptionLineCreator from './components/OptionLineCreator.js'
 import OptionTable from './components/OptionTable.js'
@@ -25,54 +28,6 @@ const MainMenu = () => (
     </LinkContainer>
     </Nav>
   </Navbar>
-)
-
-const ExternalLink = (props) => <a href={props.href} target="_blank" rel="noreferrer noopener">{props.a}</a>
-
-const ConceptLink = () =>
-   <a href="https://mxn.github.io/eth_option/" target="_blank" rel="noreferrer noopener">concept document</a>
-
-const Home = () => (
-  <Jumbotron className="show-bg-img">
-    <p>Welcome to crypto option creation site</p>
-      <p>The goal of the project is a possibility to create option contracts,
-      similar to stock options, for ERC20 tokens, which are themselves ERC20-tokens. The ERC20 compatibility allows the options to be easily traded on different exchanges
-      </p>
-      <p>The more details can be read in the <ConceptLink/>
-      </p>
-      <p>
-      Currently, you can play the demo on Application tab. Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
-      </p>
-      <p>
-      Under <strong>Help</strong> tab you can find screencasts with the examples of option operations, inclusive OTC trading
-      </p>
-      <p>
-        To get some ETH one can use <ExternalLink href="https://github.com/kovan-testnet/faucet" a="Kovan Faucet"/>
-      </p>
-      <p>
-        To get some DAO tokens one can
-        use <ExternalLink href="https://oasis.direct/" a="Oasis Direct"/> exchange service
-      </p>
-      <p>
-        Short roadmap
-        <ul>
-          <li>"democratization" of the creation of option series. Currently,
-          only owners are allowed to do this. It can be seen as ERC721 based
-          rights to create option series. The ERC721 tokens can get via auction.
-          Incentives to create option series is collection the fees,
-          which are taken by option writing</li>
-          <li>Creation possibility to exercise and sell underlying via exchange
-          in one transaction. It allows for option owner to perform
-          the operation without full coverage of the exercised amount</li>
-          <li>Make the option tokens as ERC821 compatible to simplify option
-          operations which are currently required first to approve option and
-          anti-option tokens</li>
-          <li>Optimization of option series creation in the sense of
-          the gas costs</li>
-          <li>Simplification of options trading. Normally the token exchanges require registration for every token and this process does not suite well for option and anti-option tokens</li>
-        </ul>
-      </p>
-    </Jumbotron>
 )
 
 const ScreenCastRow = (props) => (
