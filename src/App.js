@@ -1,5 +1,6 @@
 import {getWethInstance, getDaiInstance, getNetworkId,
   getAccount} from './components/Core.js'
+import {Contact} from './components/Contact.js'
 import Home from './components/Home.js'
 import {ConceptLink} from './components/Commons.js'
 import WethConvertor from './components/WethConvertor.js'
@@ -25,6 +26,9 @@ const MainMenu = () => (
     </LinkContainer>
     <LinkContainer to="/help">
       <NavItem eventKey={3}>Help</NavItem>
+    </LinkContainer>
+    <LinkContainer to="/contact">
+      <NavItem eventKey={4}>Contact</NavItem>
     </LinkContainer>
     </Nav>
   </Navbar>
@@ -154,6 +158,7 @@ const MainRoutes = () => (
     <Route exact path='/home' component={Home}/>
     <Route exact path='/app' component={OptionApp}/>
     <Route exact path='/help' component={Help}/>
+    <Route exact path='/contact' component={Contact}/>
   </Switch>
 )
 
