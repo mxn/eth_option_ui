@@ -7,7 +7,7 @@ import React, { Component } from 'react'
 import './App.css'
 import {Web3Provider } from 'react-web3';
 import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem,
-  Jumbotron} from 'react-bootstrap'
+  Jumbotron, Col} from 'react-bootstrap'
 import {HashRouter, Switch, Route} from 'react-router-dom'
 import {LinkContainer} from 'react-router-bootstrap'
 
@@ -27,39 +27,78 @@ const MainMenu = () => (
   </Navbar>
 )
 
+const ExternalLink = (props) => <a href={props.href} target="_blank" rel="noreferrer noopener">{props.a}</a>
+
+const ConceptLink = () =>
+   <a href="https://mxn.github.io/eth_option/" target="_blank" rel="noreferrer noopener">concept document</a>
+
 const Home = () => (
   <Jumbotron className="show-bg-img">
-    <p>Welcome to crypto option creation</p>
-      <p>The goal of the project is possibility to create <a href="https://en.wikipedia.org/wiki/Option_(finance)" target="_blank" rel="noreferrer noopener">option</a> cntacts,
-        similar to stock options, for ERC20 tokens, which are themselves ERC20-tokens.
-        The ERC20 compatibility allows the options to be easily traded on
-        different exchanges
+    <p>Welcome to crypto option creation site</p>
+      <p>The goal of the project is a possibility to create option contracts,
+      similar to stock options, for ERC20 tokens, which are themselves ERC20-tokens. The ERC20 compatibility allows the options to be easily traded on different exchanges
       </p>
-      <p>The more details can be read in the &nbsp;
-        <a href="https://mxn.github.io/eth_option/" target="_blank" rel="noreferrer noopener">concept document</a>
+      <p>The more details can be read in the <ConceptLink/>
       </p>
       <p>
-        Currently you can play demo on Application tab. Please use kovan network
+      Currently, you can play the demo on Application tab. Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
       </p>
       <p>
-        To get some ETH one can use <a href="https://github.com/kovan-testnet/faucet" target="_blank" rel="noreferrer noopener">Kovan Faucet</a>
+      Under <strong>Help</strong> tab you can find screencasts with the examples of option operations, inclusive OTC trading
       </p>
       <p>
-        To get some DAO one can use <a href="https://oasis.direct/" target="_blank" rel="noreferrer noopener">Oasis Direct</a>
+        To get some ETH one can use <ExternalLink href="https://github.com/kovan-testnet/faucet" a="Kovan Faucet"/>
+      </p>
+      <p>
+        To get some DAO tokens one can
+        use <ExternalLink href="https://oasis.direct/" a="Oasis Direct"/> exchange service
+      </p>
+      <p>
+        Short roadmap
+        <ul>
+          <li>"democratization" of the creation of option series. Currently,
+          only owners are allowed to do this. It can be seen as ERC721 based
+          rights to create option series. The ERC721 tokens can get via auction.
+          Incentives to create option series is collection the fees,
+          which are taken by option writing</li>
+          <li>Creation possibility to exercise and sell underlying via exchange
+          in one transaction. It allows for option owner to perform
+          the operation without full coverage of the exercised amount</li>
+          <li>Make the option tokens as ERC821 compatible to simplify option
+          operations which are currently required first to approve option and
+          anti-option tokens</li>
+          <li>Optimization of option series creation in the sense of
+          the gas costs</li>
+          <li>Simplification of options trading. Normally the token exchanges require registration for every token and this process does not suite well for option and anti-option tokens</li>
+        </ul>
       </p>
     </Jumbotron>
 )
 
+const ScreenCastRow = (props) => (
+  <Row>
+    <Col sm={1}>&nbsp;</Col>
+    <Col md={3}><p>{props.name}</p></Col>
+    <Col md={8}>
+      <div style={{ width: 640, height: 'auto' }}>
+        <div className="embed-responsive embed-responsive-16by9">
+          <iframe title={props.name} className="embed-responsive-item" src={props.src} frameborder="0"
+            allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </Col>
+  </Row>
+)
+
 const Help = () => (
-  <div>
-  <Jumbotron>
-    <p>
-    See screencasts on <a href="https://www.youtube.com/channel/UC9ib9my1AgtQVz6uZaIw8Ww" target="_blank" rel="noreferrer noopener">erc20-option channel</a>
-    </p>
-  </Jumbotron>
+    <Jumbotron>
+      <p>For the operations see the screencasts below. See also the <ConceptLink/></p>
+      <ScreenCastRow name="Create Option Serie and Writing Options" src="https://www.youtube.com/embed/z-HqmaYFpGE"/>
+      <ScreenCastRow name="OTC Trading Options" src="https://www.youtube.com/embed/Ed7_bkUnPzM"/>
+      <ScreenCastRow name="Exercise options" src="https://www.youtube.com/embed/qJY2KpnrClw"/>
+      <ScreenCastRow name="Withdraw via anti-options options" src="https://www.youtube.com/embed/qBhJnKGoKt0"/>
+    </Jumbotron>
 
-
-  </div>
 )
 
 
