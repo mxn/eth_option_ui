@@ -61,62 +61,66 @@ export default class OptionLineCreator extends Component {
   }
 
   render() {
-      if (!this.state.isOwner) {
-        return (<Alert bsStyle="warning">
-        You are not allowed to create options lines
-        </Alert>)
-      }
-      return (
-        <Grid className="show-grid">
-          <Form horisontal="true">
-          <Row><h4>Option Line Creator</h4></Row>
-          <FormGroup>
-            <Col sm={4} componentClass={ControlLabel}>Basis:</Col>
-            <Col sm={8} componentClass={FormControl.Static}>
-              {getDisplayTokenName(this.props.basisToken)}</Col>
-          </FormGroup>
-          <FormGroup>
-            <Col sm={4} componentClass={ControlLabel}>Underlying:</Col>
-            <Col sm={8} componentClass={FormControl.Static}>
-              {getDisplayTokenName(this.props.underlying)}</Col>
-          </FormGroup>
-          <FormGroup controlId="strike">
-              <Col sm={4} componentClass={ControlLabel}>
-                Strike:
-              </Col>
-              <Col sm={8}>
-                <FormControl type="number" value={this.state.strike}
-                  onChange={this.handleEvents}/>
-              </Col>
-          </FormGroup>
-          <FormGroup controlId="underQty">
-              <Col sm={4} componentClass={ControlLabel}>
-                Underlying Quantity:
-              </Col>
-              <Col sm={8}>
-                <FormControl type="number" value={this.state.underQty}
-                  onChange={this.handleEvents}/>
-              </Col>
-          </FormGroup>
-          <FormGroup>
-          <Col sm={4} componentClass={ControlLabel}>
-            Expire Date:
-          </Col>
-          <Col sm={8}>
-            <DayPickerInput id="expireDate"
-              onDayChange={this.handleDateChange} />
-          </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col smOffset={4} sm={8}>
-              <ProcessingButton type="button"
-                disabled={this.state.strike === 0 ||
-                  this.state.underQty === 0 ||
-                  this.state.expireDate === ""}
-                onClick={() => this.generateOptionLine()} button="Create"/>
+    var AlertNonOwner = () => null
+
+    if (!this.state.isOwner) {
+      AlertNonOwner = () => (<Alert bsStyle="warning">
+      You are not allowed to create options lines
+      </Alert>)
+    }
+    return (
+      <Grid className="show-grid">
+        <AlertNonOwner/>
+        <Form horisontal="true">
+        <Row><h4>Option Line Creator</h4></Row>
+        <FormGroup>
+          <Col sm={4} componentClass={ControlLabel}>Basis:</Col>
+          <Col sm={8} componentClass={FormControl.Static}>
+            {getDisplayTokenName(this.props.basisToken)}</Col>
+        </FormGroup>
+        <FormGroup>
+          <Col sm={4} componentClass={ControlLabel}>Underlying:</Col>
+          <Col sm={8} componentClass={FormControl.Static}>
+            {getDisplayTokenName(this.props.underlying)}</Col>
+        </FormGroup>
+        <FormGroup controlId="strike">
+            <Col sm={4} componentClass={ControlLabel}>
+              Strike:
             </Col>
-          </FormGroup>
-        </Form>
-      </Grid>)
+            <Col sm={8}>
+              <FormControl type="number" value={this.state.strike}
+                onChange={this.handleEvents}/>
+            </Col>
+        </FormGroup>
+        <FormGroup controlId="underQty">
+            <Col sm={4} componentClass={ControlLabel}>
+              Underlying Quantity:
+            </Col>
+            <Col sm={8}>
+              <FormControl type="number" value={this.state.underQty}
+                onChange={this.handleEvents}/>
+            </Col>
+        </FormGroup>
+        <FormGroup>
+        <Col sm={4} componentClass={ControlLabel}>
+          Expire Date:
+        </Col>
+        <Col sm={8}>
+          <DayPickerInput id="expireDate"
+            onDayChange={this.handleDateChange} />
+        </Col>
+        </FormGroup>
+        <FormGroup>
+          <Col smOffset={4} sm={8}>
+            <ProcessingButton type="button"
+              disabled={this.state.strike === 0 ||
+                this.state.underQty === 0 ||
+                this.state.expireDate === "" ||
+                !this.state.isOwner}
+              onClick={() => this.generateOptionLine()} button="Create"/>
+          </Col>
+        </FormGroup>
+      </Form>
+    </Grid>)
   }
 }
