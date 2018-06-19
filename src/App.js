@@ -2,7 +2,7 @@ import {getWethInstance, getDaiInstance, getNetworkId,
   getAccount} from './components/Core.js'
 import {Contact} from './components/Contact.js'
 import Home from './components/Home.js'
-import {ConceptLink} from './components/Commons.js'
+import {ConceptLink, ExternalLink} from './components/Commons.js'
 import WethConvertor from './components/WethConvertor.js'
 import OptionLineCreator from './components/OptionLineCreator.js'
 import OptionTable from './components/OptionTable.js'
@@ -41,8 +41,8 @@ const ScreenCastRow = (props) => (
     <Col md={8}>
       <div style={{ width: 640, height: 'auto' }}>
         <div className="embed-responsive embed-responsive-16by9">
-          <iframe title={props.name} className="embed-responsive-item" src={props.src} frameborder="0"
-            allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          <iframe title={props.name} className="embed-responsive-item" src={props.src} frameBorder="0"
+            allow="autoplay; encrypted-media" allowFullScreen></iframe>
         </div>
       </div>
     </Col>
@@ -134,12 +134,13 @@ export class OptionApp extends Component {
   }
 
   render() {
-    console.log("render OptionApp")
-
+    let AlertWeb3 = () => (<Alert bsStyle="warning">No ETH Account Available.
+      You need to have a web3 extension, such as <ExternalLink href="https://metamask.io/" a="Metamask"/>, and unlock account</Alert>)
     return (
       <Grid>
         <Row><h1 className="App-title">Crypto Token Options</h1></Row>
-          <Web3Provider onChangeAccount={acc => this.onChangeAccount()}>
+          <Web3Provider onChangeAccount={acc => this.onChangeAccount()}
+            web3UnavailableScreen={() => <AlertWeb3/>}>
               <Content notValidNetwork={this.state.isNotValidNetwork}
                   isLoading={this.state.basisToken == null || this.state.underlying == null}
                   underlying={this.state.underlying}
