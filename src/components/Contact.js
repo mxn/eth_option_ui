@@ -5,6 +5,10 @@ import {Form, FormGroup, Col, FormControl, Grid,
 export const Contact = () => (
   <Grid>
   <Row>
+    <Col><h4>Join Telegram <a href="https://t.me/joinchat/H8wrRxBiMG19jwvFbxrhfA">
+      erc20-options </a> group or leave a message here:</h4></Col>
+  </Row>
+  <Row>
     <Col sm={6}>
     <Form horizontal action="https://formspree.io/sub.mxn@gmail.com" method="POST">
 
