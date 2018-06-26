@@ -212,7 +212,7 @@ export default class OptionActions extends Component {
       [this.state.balances.tokenAntiOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenAntiOption},
         need ${this.state.value})`],
-      [this.state.allowances.tokenAntiOption >= this.state.value,
+      [this.state.allowances.tokenAntiOption >= this.state.value * 1.0,
         `Not enough allowance (${this.state.allowances.tokenAntiOption}
           , need  ${this.state.value})
           of Option tokens`]
