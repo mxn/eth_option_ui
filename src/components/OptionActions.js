@@ -140,7 +140,7 @@ export default class OptionActions extends Component {
     if (conditions.every(el => el[0])) {
       return {
         title: "Write Option",
-        body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlaying and pay fee ${feeDecimal} ${feeTokenName}`
+        body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${feeTokenName}`
       }
     }
     return {
