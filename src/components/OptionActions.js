@@ -152,10 +152,10 @@ export default class OptionActions extends Component {
 
   getAnnihilateCaution() {
     let conditions = [
-      [this.state.balances.tokenOption >= this.state.value,
+      [this.state.balances.tokenOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenOption},
         need ${this.state.value})`],
-      [this.state.balances.tokenAntiOption >= this.state.value,
+      [this.state.balances.tokenAntiOption >= this.state.value * 1.0,
         `Not enough balance (${this.state.balances.tokenAntiOption},
           need  ${this.state.value}) of Anti-Option tokens`],
       [this.state.allowances.tokenOption >= this.state.value,
@@ -181,10 +181,10 @@ export default class OptionActions extends Component {
     console.log("getExerciseCaution")
     console.log(this.state.optionPairDetails)
     let conditions = [
-      [this.state.balances.tokenOption >= this.state.value,
+      [this.state.balances.tokenOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenOption},
         need ${this.state.value})`],
-      [this.state.allowances.tokenOption >= this.state.value,
+      [this.state.allowances.tokenOption >= this.state.value * 1.0,
         `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`],
@@ -209,7 +209,7 @@ export default class OptionActions extends Component {
 
   getWithdrawCaution() {
     let conditions = [
-      [this.state.balances.tokenAntiOption >= this.state.value,
+      [this.state.balances.tokenAntiOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenAntiOption},
         need ${this.state.value})`],
       [this.state.allowances.tokenAntiOption >= this.state.value,
