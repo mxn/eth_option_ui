@@ -1,5 +1,5 @@
 import {getWethInstance, getDaiInstance, getNetworkId,
-  getAccount} from './components/Core.js'
+  getAccount, isTransEnabled} from './components/Core.js'
 import {Contact} from './components/Contact.js'
 import Home from './components/Home.js'
 import {ConceptLink, ExternalLink} from './components/Commons.js'
@@ -9,7 +9,7 @@ import OptionTable from './components/OptionTable.js'
 
 import React, { Component } from 'react'
 import './App.css'
-import {Web3Provider } from 'react-web3';
+
 import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem,
   Jumbotron, Col} from 'react-bootstrap'
 import {HashRouter, Switch, Route} from 'react-router-dom'
@@ -82,9 +82,15 @@ class Content extends Component {
     } else if (this.props.isLoading) {
       return <Row><span>Loading...</span></Row>
     } else  {
+      let firstRow = isTransEnabled() ? <span>Account:  {this.state.account} </span> :
+        (<Alert bsStyle="warning">Currently you run the application in read-only mode with
+          limited and unstable functionality. For transaction processing
+          you need to have web3 extensions, e.g.
+        <ExternalLink href="https://metamask.io/" a="Metamask"/>,
+        and unlocked account</Alert>)
       return (
         <Grid>
-          <Row>Account: {this.state.account} </Row>
+          <Row>{firstRow}</Row>
           <Tabs id="main_tabs">
             <Tab eventKey="1" title="Options' Operations">
               <OptionTable underlying={this.props.underlying}
@@ -134,19 +140,14 @@ export class OptionApp extends Component {
   }
 
   render() {
-    let AlertWeb3 = () => (<Alert bsStyle="warning">No ETH Account Available.
-      You need to have a web3 extension, such as <ExternalLink href="https://metamask.io/" a="Metamask"/>, and unlock account</Alert>)
     return (
       <Grid>
         <Row><h1 className="App-title">Crypto Token Options</h1></Row>
-          <Web3Provider onChangeAccount={acc => this.onChangeAccount()}
-            web3UnavailableScreen={() => <AlertWeb3/>}>
               <Content notValidNetwork={this.state.isNotValidNetwork}
                   isLoading={this.state.basisToken == null || this.state.underlying == null}
                   underlying={this.state.underlying}
                   basisToken={this.state.basisToken}
                   />
-          </Web3Provider>
         </Grid>
     )
 

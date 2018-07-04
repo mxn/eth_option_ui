@@ -1,4 +1,6 @@
+import {isTransEnabled} from './Core'
 import ProcessingButton from './ProcessingButton'
+
 import React, { Component } from 'react'
 import {FormGroup, FormControl, InputGroup} from 'react-bootstrap'
 
@@ -28,7 +30,7 @@ export default class NumberEntryGroup extends Component {
         <InputGroup>
           <InputGroup.Addon>{this.state.label}</InputGroup.Addon>
           <FormControl type="number" value={this.state.value}
-            disabled={this.state.isProcessing}
+            disabled={this.state.isProcessing || !isTransEnabled()}
             min={this.props.min || 0}
             max={this.props.max || Number.MAX_SAFE_INTEGER}
             onChange={(v) => this.setState({value: v.target.value})}/>

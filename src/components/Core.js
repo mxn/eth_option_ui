@@ -29,10 +29,14 @@ export const getWeb3 = () => {
     web3 =  new Web3(window.web3.currentProvider)
     console.log('use current provider')
   } else {
-    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
+    web3 = new Web3(new Web3.providers.HttpProvider("https://pkovan.infura.io"))
     console.log('use fallback HttpProvider')
   }
   return web3
+}
+
+export const isTransEnabled = () => {
+  return window.hasOwnProperty('web3')
 }
 
 const getErc20 = () => {
@@ -166,8 +170,12 @@ export const onMined = (transNo, callback)  => {
 export const getBalance = async (token) => {
     let erc20 = await getErc20At(token)
     let account = await getAccount()
-    const balBigNumber = await promisify(cb =>  erc20.balanceOf(account, cb))
-    return balBigNumber.dividedBy(DECIMAL_FACTOR).toFixed()
+    try {
+      const balBigNumber = await promisify(cb =>  erc20.balanceOf(account, cb))
+      return balBigNumber.dividedBy(DECIMAL_FACTOR).toNumber()
+    } catch (e) {
+      return 0
+    }
 }
 
 export const getAllowance = async (token, targetContract) => {

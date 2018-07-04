@@ -41,12 +41,11 @@ export default class WethConvertor extends Component {
 
   async refreshBalances() {
     let wethInstance = await getWethInstance()
-    const balEth = await promisify(cb => this.web3.eth
-      .getBalance(this.state.account, cb))
+    const balEth = await getBalance(this.state.account)
     this.setState({currentBalanceEth: this.web3utils
       .toDecimal(this.web3utils.fromWei(balEth,"ether"))})
     this.setState({currentBalanceWeth:
-      await getBalance(wethInstance.address)})  
+      await getBalance(wethInstance.address)})
  }
 
  async convertEth(val) {

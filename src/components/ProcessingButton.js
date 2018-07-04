@@ -1,3 +1,5 @@
+import {isTransEnabled} from './Core'
+
 import React, {Component} from 'react'
 import {Button} from 'react-bootstrap'
 
@@ -16,7 +18,7 @@ export default class ProcessingButton extends Component {
   render() {
     return (<Button className="Button-action"
     bsStyle={this.state.isProcessing ? "warning" : "success"}
-    disabled={this.state.isProcessing || this.props.disabled}
+    disabled={this.state.isProcessing || this.props.disabled || !isTransEnabled()}
     onClick={() => this.onClick()}> {this.state.isProcessing ? "Processing":
     this.props.button } </Button>)
   }
