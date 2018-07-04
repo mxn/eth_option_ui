@@ -1,5 +1,6 @@
 import {getWeb3, DECIMAL_FACTOR, getErc20At, getAllowance, promisify,
-  getReceipt, getDefaultTransObj, publishTokenMutation} from './Core'
+  getReceipt, getDefaultTransObj, publishTokenMutation,
+  isTransEnabled} from './Core'
 import NumberEntryGroup from './NumberEntryGroup'
 import React, {Component} from 'react'
 
@@ -18,8 +19,12 @@ export default class Approval extends Component {
   }
 
   async updateAllowance() {
-    this.setState({allowance:
-      await getAllowance(this.props.token, this.props.targetContract)})
+    if (isTransEnabled()) {
+      this.setState({allowance:
+        await getAllowance(this.props.token, this.props.targetContract)})
+    } else {
+      this.setState({allowance: 'N/A'})
+    }
   }
 
   async approve(amount) {
