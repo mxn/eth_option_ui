@@ -1,5 +1,5 @@
 import {promisify, setStatePropFromEvent,
-  getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES,
+  getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES, isTransEnabled,
   publishTokenMutation, getBalance, getAccount, getDefaultTransObj} from './Core'
 import TransactionStatus from './TransactionStatus'
 import NumberEntryGroup from './NumberEntryGroup'
@@ -24,6 +24,9 @@ export default class WethConvertor extends Component {
   async componentDidMount() {
     this.handleEvents = this.handleEvents.bind(this)
     let wethInstance = await getWethInstance()
+    if (!isTransEnabled()) {
+      return
+    } 
     this.setState({account: await getAccount()})
     this.refreshBalances()
     this.subscriber = PubSub.subscribe(TOPIC_AFFECTED_BALANCES,

@@ -1,4 +1,4 @@
-import {getWethInstance, getDaiInstance, getNetworkId,
+import {getWethInstance, getDaiInstance, getNetworkId, getNetworkName,
   getAccount, isTransEnabled} from './components/Core.js'
 import {Contact} from './components/Contact.js'
 import Home from './components/Home.js'
@@ -68,7 +68,8 @@ class Content extends Component {
   }
 
   async componentDidMount() {
-    this.setState({account: await getAccount()})
+    this.setState({account: await getAccount(),
+      networkName: await getNetworkName()})
   }
 
   static getDerivedStateFromProps(prev, nextProps) {
@@ -83,7 +84,8 @@ class Content extends Component {
       return <Row><span>Loading...</span></Row>
     } else  {
       let firstRow = isTransEnabled() ? <span>Account:  {this.state.account} </span> :
-        (<Alert bsStyle="warning">Currently you run the application in read-only mode with
+        (<Alert bsStyle="warning">Currently you run the application in
+          read-only mode on {this.state.networkName} with
           limited and unstable functionality. For transaction processing
           you need to have web3 extensions, e.g.
         <ExternalLink href="https://metamask.io/" a="Metamask"/>,

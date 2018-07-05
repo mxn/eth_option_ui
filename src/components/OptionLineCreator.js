@@ -1,5 +1,5 @@
 import {setStatePropFromEvent, promisify,
-  getOptionFactoryInstance, getWeb3, getReceipt,
+  getOptionFactoryInstance, getWeb3, getReceipt, isTransEnabled,
   getDisplayTokenName, getDefaultTransObj}  from './Core'
 import ProcessingButton from './ProcessingButton'
 
@@ -28,6 +28,9 @@ export default class OptionLineCreator extends Component {
   async componentWillMount() {
     this.handleEvents = this.handleEvents.bind(this)
     this.handleDateChange = this.handleDateChange.bind(this)
+    if (!isTransEnabled()) {
+      return
+    }
     const optionFactoryInstance = await getOptionFactoryInstance()
     let owner = await promisify(cb => optionFactoryInstance.owner(cb))
     this.setState({isOwner: owner === web3.eth.accounts[0]})
@@ -89,6 +92,7 @@ export default class OptionLineCreator extends Component {
             </Col>
             <Col sm={8}>
               <FormControl type="number" value={this.state.strike}
+                disabled={!isTransEnabled()}
                 onChange={this.handleEvents}/>
             </Col>
         </FormGroup>
@@ -98,6 +102,7 @@ export default class OptionLineCreator extends Component {
             </Col>
             <Col sm={8}>
               <FormControl type="number" value={this.state.underQty}
+                disabled={!isTransEnabled()}
                 onChange={this.handleEvents}/>
             </Col>
         </FormGroup>
@@ -107,6 +112,7 @@ export default class OptionLineCreator extends Component {
         </Col>
         <Col sm={8}>
           <DayPickerInput id="expireDate"
+            disabled={!isTransEnabled()}
             onDayChange={this.handleDateChange} />
         </Col>
         </FormGroup>

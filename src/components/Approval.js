@@ -23,7 +23,7 @@ export default class Approval extends Component {
       this.setState({allowance:
         await getAllowance(this.props.token, this.props.targetContract)})
     } else {
-      this.setState({allowance: 'N/A'})
+      this.setState({allowance: 0})
     }
   }
 
@@ -40,7 +40,7 @@ export default class Approval extends Component {
   }
 
   render () {
-    if (this.state.allowance) {
+    if (this.state.allowance !== null) {
       return (
         <NumberEntryGroup label={`Allowed ${this.state.allowance}`} button="Approve" value={this.state.allowance} onClick={(v) => this.approve(v) }/>
       )

@@ -36,7 +36,7 @@ export const getWeb3 = () => {
 }
 
 export const isTransEnabled = () => {
-  return window.hasOwnProperty('web3')
+  return window.hasOwnProperty('web3') && web3.eth.accounts.length > 0
 }
 
 const getErc20 = () => {
@@ -73,6 +73,15 @@ const getContractInstance = async(json, address) => {
 
 export const getNetworkId = () => {
   return  promisify(cb => getWeb3().version.getNetwork(cb))
+}
+
+export const getNetworkName = async () => {
+  switch (Number(await getNetworkId())) {
+    case 1: return "main"
+    case 3: return "ropsten"
+    case 42: return "kovan"
+    default: return "unknown development"
+  }
 }
 
 export const  getEtherscanHost = async () => {
@@ -114,6 +123,9 @@ export const getDaiInstance = async () => {
 
 export const  getAccount = async () => {
   let accounts =  await promisify(cb=>getWeb3().eth.getAccounts(cb))
+  if (accounts === null || accounts === undefined || accounts.length === 0) {
+    return null
+  }
   return accounts[0]
 }
 
@@ -179,8 +191,13 @@ export const getBalance = async (token) => {
 }
 
 export const getAllowance = async (token, targetContract) => {
+  try {
     const balBigNumber = await (await getErc20()).at(token).allowance(web3.eth.accounts[0], targetContract)
     return balBigNumber.dividedBy(DECIMAL_FACTOR).toFixed()
+  } catch (e) {
+    return 0
+  }
+
 }
 
 export const setStatePropFromEvent = (ev, objToSet) => {

@@ -1,4 +1,4 @@
-import {getBalance, getOptionFactoryInstance,
+import {getBalance, getOptionFactoryInstance, isTransEnabled,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
   getAllowance, getFeeCalculatorInstance, getTokenName}  from './Core'
@@ -336,7 +336,7 @@ export default class OptionActions extends Component {
                onSelect={(eventKey) => this.onSelect(eventKey)}
                disabled = {this.state.value === 0 ||
                  this.state.availableActions.length === 0 ||
-                 this.state.isLoading}
+                 this.state.isLoading || !isTransEnabled()}
                title={this.state.isLoading ?  "Processing" : "Action"}>
                {this.state.availableActions.map((key, i) => {
                  return <MenuItem key={"mu_" + i} eventKey={key}>{this.actionToLabel[key]}</MenuItem>
