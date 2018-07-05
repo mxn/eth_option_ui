@@ -22,7 +22,7 @@ const MainMenu = () => (
       <NavItem eventKey={1}><strong>Home</strong></NavItem>
     </LinkContainer>
     <LinkContainer to="/app">
-      <NavItem eventKey={2}>Application</NavItem>
+      <NavItem eventKey={2}>Try It!</NavItem>
     </LinkContainer>
     <LinkContainer to="/help">
       <NavItem eventKey={3}>Help</NavItem>

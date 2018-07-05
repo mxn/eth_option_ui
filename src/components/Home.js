@@ -15,7 +15,7 @@ export default class Home extends Component {
             <p>The more details can be read in the <ConceptLink/>
             </p>
             <p>
-            Currently, you can play the demo on Application tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
+            Currently, you can play the demo on <strong>Try It!</strong> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
             </p>
             <p>
             Under <strong>Help</strong> tab you can find the screencasts with the examples of option operations, inclusive OTC trading
@@ -29,6 +29,7 @@ export default class Home extends Component {
             </p>
             <p>
               Short roadmap
+            </p>
               <ul>
                 <li>"Democratization" of the creation of option series. Currently,
                 only hte owner is allowed to do this. It could be implememted as ERC721 based
@@ -49,7 +50,6 @@ export default class Home extends Component {
                 this process does not suite well for option and anti-option
                 tokens</li>
               </ul>
-            </p>
           </Jumbotron>
     )
   }
