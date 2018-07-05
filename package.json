@@ -11,7 +11,7 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "deploy-s3": "rm -rf build/; npm run build && aws s3 sync build/ s3://www.erc20-options.com"
+    "deploy-s3": "rm -rf build/; npm run build && npm run config-ropsten && aws s3 sync build/ s3://www.erc20-options.com"
   },
   "repository": {
     "type": "git",

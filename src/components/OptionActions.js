@@ -327,7 +327,7 @@ export default class OptionActions extends Component {
         <Caution/>
         <FormGroup>
          <InputGroup>
-           <FormControl type="number" value={this.state.value} disabled={this.state.isLoading} onChange={(ev) => this.setState({value: ev.target.value})}/>
+           <FormControl type="number" value={this.state.value} disabled={this.state.isLoading || !isTransEnabled()} onChange={(ev) => this.setState({value: ev.target.value})}/>
              <DropdownButton
                className="dropdown-action"
                componentClass={InputGroup.Button} bsStyle={this.state.isLoading ? "warning" : "success"}
