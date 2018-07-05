@@ -83,9 +83,13 @@ class Content extends Component {
     } else if (this.props.isLoading) {
       return <Row><span>Loading...</span></Row>
     } else  {
-      let firstRow = isTransEnabled() ? <span>Account:  {this.state.account} </span> :
+      let firstRow = isTransEnabled() ?
+        (<span>Account: {this.state.account}
+          {this.state.networkName === 'main' ? '' :
+          ` (network: ${this.state.networkName})` }</span>) :
         (<Alert bsStyle="warning">Currently you run the application in
-          read-only mode on {this.state.networkName} with
+          read-only mode on <strong>{this.state.networkName}</strong> network
+          with
           limited and unstable functionality. For transaction processing
           you need to have web3 extensions, e.g.
         <ExternalLink href="https://metamask.io/" a="Metamask"/>,
