@@ -18,7 +18,7 @@ export default class Home extends Component {
             Currently, you can play the demo on <strong>Try It!</strong> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
             </p>
             <p>
-            Under <strong>Help</strong> tab you can find the screencasts with the examples of option operations, inclusive OTC trading
+            Under <strong>Help</strong> tab you can find the screencasts with the examples of option operations, inclusive OTC trading. For OTC trading one can use <ExternalLink href="https://0xproject.com/portal/generate" a="this 0x portal link"/>
             </p>
             <p>
               To get some ETH one can use <ExternalLink href="https://github.com/kovan-testnet/faucet" a="Kovan Faucet"/>
