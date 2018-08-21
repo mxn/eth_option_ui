@@ -144,7 +144,7 @@ export default class OptionActions extends Component {
       }
     }
     return {
-      title: "You cannot write requesed amount!",
+      title: "You cannot write requested amount!",
       isError: true,
       body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
     }
@@ -162,7 +162,7 @@ export default class OptionActions extends Component {
         `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`],
-      [this.state.allowances.tokenOption >= this.state.value,
+      [this.state.allowances.tokenAntiOption >= this.state.value,
           `Not enough allowance (${this.state.allowances.tokenAntiOption}
             , need  ${this.state.value})
             of Anti-Option tokens`]
