@@ -21,7 +21,7 @@ export default class OptionActions extends Component {
       availableActions: []}
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     this.actions = {WRITE: this.writeOptions,
         EXERCISE: this.exerciseOptions,
         WITHDRAW: this.withdrawOptions,
@@ -34,9 +34,6 @@ export default class OptionActions extends Component {
     this.actionToLabel["Withdraw"] = "Withdraw All"
       this.setState({availableActions: await this.getAvailableActions()})
 
-  }
-
-  async componentDidMount() {
     this.subscriber = PubSub.subscribe(TOPIC_AFFECTED_BALANCES,
       async () => {
         this.setState({availableAction: await this.getAvailableActions()})
@@ -158,11 +155,11 @@ export default class OptionActions extends Component {
       [this.state.balances.tokenAntiOption >= this.state.value * 1.0,
         `Not enough balance (${this.state.balances.tokenAntiOption},
           need  ${this.state.value}) of Anti-Option tokens`],
-      [this.state.allowances.tokenOption >= this.state.value,
+      [this.state.allowances.tokenOption >= this.state.value * 1.0,
         `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`],
-      [this.state.allowances.tokenAntiOption >= this.state.value,
+      [this.state.allowances.tokenAntiOption >= this.state.value * 1.0,
           `Not enough allowance (${this.state.allowances.tokenAntiOption}
             , need  ${this.state.value})
             of Anti-Option tokens`]
