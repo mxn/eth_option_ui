@@ -10,6 +10,8 @@ const jsonTokenOption = require("solidity-contracts/TokenOption.json")
 const jsonTokenAntiOption = require("solidity-contracts/TokenOption.json")
 const jsonOptionPair = require("solidity-contracts/OptionPair.json")
 const jsonFeeCalculator = require("solidity-contracts/IFeeCalculator.json")
+const jsonRequestHandler = require("solidity-contracts/OSDirectRequestHandler.json")
+const jsonOptionSerieToken = require("solidity-contracts/OptionSerieToken.json")
 
 export const TOPIC_AFFECTED_BALANCES = 'affected_balances'
 
@@ -146,6 +148,16 @@ export const getOptionFactoryInstance = async () => {
     }
 }
 
+export const getRequestHandlerInstance = () => {
+  return getContractInstance(jsonRequestHandler)
+}
+
+export const getDefaultFeeCalculatorAddress = async () => {
+  let optFactory = await getOptionFactoryInstance()
+  console.log (optFactory);
+  return promisify((cb) => optFactory.feeCalculator(cb))
+}
+
 export const getOptionPairInstance = (address) => {
   return getContractInstance(jsonOptionPair, address)
 }
@@ -160,6 +172,10 @@ export const getTokenAntiOptionInstance = (address) => {
 
 export const getFeeCalculatorInstance = (address) => {
   return getContractInstance(jsonFeeCalculator, address)
+}
+
+export const getOptionSerieToken = () => {
+  return getContractInstance(jsonOptionSerieToken)
 }
 
 export const onMined = (transNo, callback)  => {
