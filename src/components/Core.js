@@ -12,6 +12,7 @@ const jsonOptionPair = require("solidity-contracts/OptionPair.json")
 const jsonFeeCalculator = require("solidity-contracts/IFeeCalculator.json")
 const jsonRequestHandler = require("solidity-contracts/OSDirectRequestHandler.json")
 const jsonOptionSerieToken = require("solidity-contracts/OptionSerieToken.json")
+const jsonExchangeAdapterOasisImpl = require("solidity-contracts/ExchangeAdapterOasisImpl.json") 
 
 export const TOPIC_AFFECTED_BALANCES = 'affected_balances'
 
@@ -150,6 +151,11 @@ export const getOptionFactoryInstance = async () => {
 
 export const getRequestHandlerInstance = () => {
   return getContractInstance(jsonRequestHandler)
+}
+
+export const getExchangeAdapterAddress = async () => {
+  let exchangeAdapter = await getContractInstance(jsonExchangeAdapterOasisImpl)
+  return exchangeAdapter.address
 }
 
 export const getDefaultFeeCalculatorAddress = async () => {

@@ -8,9 +8,32 @@ import PubSub from 'pubsub-js'
 import {DropdownButton, MenuItem, FormGroup, InputGroup, FormControl, Modal,
   Button} from 'react-bootstrap'
 
-const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE="EXERCISE", WITHDRAW="WITHDRAW"
+const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE="EXERCISE", EXERCISE_EXCHANGE="EXERCISE_EXCHANGE", WITHDRAW="WITHDRAW"
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
+
+
+function getCautionMessage(conditions) {
+  console.log("conditions", conditions)
+  if (conditions.every(el => el[0])) {
+    return null
+  }
+  return conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "") || {}
+}
+
+function getCaution (conditions, title, isError) {
+  console.log("conditions in getCaution", conditions)
+  let cautionMsg = getCautionMessage(conditions) 
+  console.log(cautionMsg)
+  if (cautionMsg) {
+    return {
+      title: title,
+      isError: isError,
+      body: cautionMsg
+    }
+  } 
+  return null 
+}
 
 export default class OptionActions extends Component {
   constructor(props) {
@@ -117,6 +140,8 @@ export default class OptionActions extends Component {
        })
   }
 
+  
+
   async getWriteCaution() {
     var feeTokenAddress, fee
     [feeTokenAddress, fee] = await this.getFee()
@@ -134,17 +159,26 @@ export default class OptionActions extends Component {
           , need  ${this.state.value * this.state.optionPairDetails.underlyingQty})
           of underlying`]
     ]
-    if (conditions.every(el => el[0])) {
-      return {
+    let caution = getCaution(conditions, "You cannot write requested amount!", true)
+    return caution ? caution :  {
         title: "Write Option",
         body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${feeTokenName}`
-      }
     }
-    return {
-      title: "You cannot write requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+  }
+
+  async getExerciseExchangeCaution() {
+    console.log("getExerciseExchangeCaution")
+    console.log(this.state.optionPairDetails)
+    let conditions = [
+      [this.state.balances.tokenOption >= this.state.value * 1.0,
+      `Not enough balance (${this.state.balances.tokenOption},
+        need ${this.state.value})`],
+      [this.state.allowances.tokenOption >= this.state.value * 1.0,
+        `Not enough allowance (${this.state.allowances.tokenOption}
+          , need  ${this.state.value})
+          of Option tokens`]]
+      //TODO
+      return getCaution(conditions, "You cannot exercise options", true)
   }
 
   getAnnihilateCaution() {
@@ -164,14 +198,7 @@ export default class OptionActions extends Component {
             , need  ${this.state.value})
             of Anti-Option tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot annihilate requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    return getCaution(conditions,  "You cannot annihilate requested amount!", true)
   }
 
   getExerciseCaution() {
@@ -194,14 +221,8 @@ export default class OptionActions extends Component {
           , need  ${this.state.value * this.state.optionPairDetails.strike})
           of quotation tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot exercise requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    console.log("getCaution", getCaution(conditions, "You cannot exercise requested amount!", true))
+    return getCaution(conditions, "You cannot exercise requested amount!", true) 
   }
 
   getWithdrawCaution() {
@@ -214,14 +235,7 @@ export default class OptionActions extends Component {
           , need  ${this.state.value})
           of Option tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot withdraw requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    return getCaution(conditions, "You cannot withdraw requested amount!", true)
   }
 
   async onSelect(ek) {
@@ -236,7 +250,7 @@ export default class OptionActions extends Component {
     let makeWithCaution =  (caution) => {
       if (caution) {
         console.log("Caution is detected")
-        caution.onOk = () => fnToExec()
+        caution.onOk = (val => fnToExec(val))
       }
       this.setState({caution: caution})
       if (!caution) {
@@ -285,11 +299,18 @@ export default class OptionActions extends Component {
         DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
   }
 
+  async exerciseOptionsWithExchange() {
+    let optionFactory = await getOptionFactoryInstance()
+    let transObj = await getDefaultTransObj()
+    return promisify(cb => optionFactory.exerciseOptions(this.props.optionPairAddress,
+        DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
+  }
+
   async componentWillUnmount() {
     this.subscriber = PubSub.unsubscribe(TOPIC_AFFECTED_BALANCES)
   }
 
-  getCaution = (props) => {
+  generateCaution = (props) => {
     if (!this.state.caution) {
       return null
     }
@@ -318,7 +339,7 @@ export default class OptionActions extends Component {
   }
 
   render () {
-    let Caution = this.getCaution
+    let Caution = this.generateCaution
     return (
       <div>
         <Caution/>
