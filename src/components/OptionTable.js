@@ -38,7 +38,7 @@ export default class OptionTable extends Component {
     }
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     const optionFactoryInstance = await getOptionFactoryInstance()
     this.setState({optionFactory: optionFactoryInstance.address})
     const filter =  optionFactoryInstance
