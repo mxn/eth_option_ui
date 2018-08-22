@@ -12,7 +12,7 @@ import './App.css'
 
 import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem,
   Jumbotron, Col} from 'react-bootstrap'
-import {HashRouter, Switch, Route} from 'react-router-dom'
+import {HashRouter, Switch, Route, Router} from 'react-router-dom'
 import {LinkContainer} from 'react-router-bootstrap'
 
 const MainMenu = () => (
@@ -21,7 +21,7 @@ const MainMenu = () => (
     <LinkContainer to="/home">
       <NavItem eventKey={1}><strong>Home</strong></NavItem>
     </LinkContainer>
-    <LinkContainer to="/app">
+    <LinkContainer to="/app/option-table">
       <NavItem eventKey={2}>Try It!</NavItem>
     </LinkContainer>
     <LinkContainer to="/help">
@@ -83,7 +83,7 @@ class Content extends Component {
     } else if (this.props.isLoading) {
       return <Row><span>Loading...</span></Row>
     } else  {
-      let firstRow = isTransEnabled() ?
+      let FirstRow = () => isTransEnabled() ?
         (<span>Account: {this.state.account}
           {this.state.networkName === 'main' ? '' :
           ` (network: ${this.state.networkName})` }</span>) :
@@ -94,24 +94,30 @@ class Content extends Component {
           you need to have web3 extensions, e.g.
         <ExternalLink href="https://metamask.io/" a="Metamask"/>,
         and unlocked account</Alert>)
+        let OptionTableRouted = () => (<OptionTable underlying={this.props.underlying}
+          basisToken={this.props.basisToken}/>)
+        let OptionLineCreatorRouted =  () => (<OptionLineCreator underlying={this.props.underlying}
+        basisToken={this.props.basisToken}/>)
       return (
-        <Grid>
-          <Row>{firstRow}</Row>
-          <Tabs id="main_tabs">
-            <Tab eventKey="1" title="Options' Operations">
-              <OptionTable underlying={this.props.underlying}
-                  basisToken={this.props.basisToken}/>
-            </Tab>
-            <Tab eventKey="2" title="ETH Warpper">
-              <WethConvertor/>
-            </Tab>
-            <Tab eventKey="3" title="Options' Admin">
-              <OptionLineCreator
-                underlying={this.props.underlying}
-                basisToken={this.props.basisToken}/>
-            </Tab>
-          </Tabs>
-        </Grid>
+        <div>
+          <FirstRow/>
+          <Nav bsStyle="tabs" activeKey="1">
+            <LinkContainer to="/app/option-table">
+              <NavItem eventKey="1">Option Table</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/app/weth-convertor">
+              <NavItem eventKey="2">Weth Convertor</NavItem>
+            </LinkContainer>
+            <LinkContainer to="/app/option-line-creation">
+              <NavItem eventKey="3">Option Line Creation</NavItem>
+            </LinkContainer>
+          </Nav>
+          <div>
+            <Route exact path="/app/option-table" component={OptionTableRouted}/>
+            <Route exact path="/app/option-line-creation" component={OptionLineCreatorRouted}/>
+            <Route exact path="/app/weth-convertor" component={WethConvertor}/>
+          </div>
+        </div>
       )
     }
   }
@@ -161,13 +167,13 @@ export class OptionApp extends Component {
 }
 
 const MainRoutes = () => (
-  <Switch>
-    <Route exact path='/' component={Home}/>
-    <Route exact path='/home' component={Home}/>
-    <Route exact path='/app' component={OptionApp}/>
-    <Route exact path='/help' component={Help}/>
-    <Route exact path='/contact' component={Contact}/>
-  </Switch>
+    <div>
+      <Route exact path='/' component={Home}/>
+      <Route exact path='/home' component={Home}/>
+      <Route path='/app' component={OptionApp}/>
+      <Route exact path='/help' component={Help}/>
+      <Route exact path='/contact' component={Contact}/>
+    </div>
 )
 
 export default class App extends Component {
