@@ -16,37 +16,11 @@ const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCIS
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
 
-class InputValue extends Component {
-  
-  constructor(props) { 
-    super(props)
-    this.state = { value: this.props.value}
-  }
-  
-  render() {
-    return (
-      <Row>
-        <InputGroup>
-          <FormControl type="number" value={this.state.value}
-            onChange={(v) => {
-              console.log("changed", v)
-              console.log("this in InputGroup", this)
-              console.log("state in InputGroup", this.state)
-              this.props.onValueChange(v.target.value)
-              this.setState({ value: v.target.value })
-            
-            }} />
-        </InputGroup>
-      </Row>
-    )
-  }
-}
-
 class ActionDialog extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      value: 0
+      value: null
     }
   }
 
@@ -56,11 +30,18 @@ class ActionDialog extends Component {
       return null
     }   
     const { title, body, isError, onOk, input } = caution
-    const Input = () => (isError || !input) ? null : (<InputValue onValueChange={v => {
-      console.log("onValueChange", v)
-      console.log("this in input", this)
-      this.setState({value: v})
-    }} value={this.state.value}   />)
+    let Input = (isError || !input) ? null : () => {
+      return (
+        <Row>
+          <InputGroup>
+            <FormControl type="number" value={this.state.value}
+              onChange={(v) => {
+                this.setState({ value: v.target.value })
+              }} />
+          </InputGroup>
+        </Row>
+      )
+    }
   return (
     <Modal.Dialog bsStyle="danger">
       <Modal.Header>
@@ -75,9 +56,7 @@ class ActionDialog extends Component {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button bsStyle="success" onClick={() => {
-          this.state.value ? onOk(this.state.valueInner) : onOk()
-        }} disabled={isError}>OK</Button>
+        <Button bsStyle="success" onClick={() => onOk(this.state.value)} disabled={isError}>OK</Button>
         <Button onClick={() => onCancel()}>Close</Button>
       </Modal.Footer>
     </Modal.Dialog>)
@@ -385,6 +364,7 @@ export default class OptionActions extends Component {
   async withdrawOptions() {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
     let transObj = await getDefaultTransObj()
+    transObj["gas"] = 300000
     return promisify(cb => optionPair.withdrawAll(transObj, cb))
   }
 
