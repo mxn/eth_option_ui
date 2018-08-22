@@ -1,18 +1,13 @@
-import {getWethInstance, getDaiInstance, getNetworkId, getNetworkName,
-  getAccount, isTransEnabled} from './components/Core.js'
 import {Contact} from './components/Contact.js'
 import Home from './components/Home.js'
-import {ConceptLink, ExternalLink} from './components/Commons.js'
-import WethConvertor from './components/WethConvertor.js'
-import OptionLineCreator from './components/OptionLineCreator.js'
-import OptionTable from './components/OptionTable.js'
-
+import OptionApp from './components/OptionApp'
+import {ConceptLink} from './components/Commons.js'
 import React, { Component } from 'react'
 import './App.css'
 
-import {Grid, Row, Tabs, Tab, Alert, Navbar, Nav, NavItem,
+import {Row,  Navbar, Nav, NavItem,
   Jumbotron, Col} from 'react-bootstrap'
-import {HashRouter, Switch, Route, Router} from 'react-router-dom'
+import {HashRouter, Route} from 'react-router-dom'
 import {LinkContainer} from 'react-router-bootstrap'
 
 const MainMenu = () => (
@@ -59,112 +54,6 @@ const Help = () => (
     </Jumbotron>
 
 )
-
-
-class Content extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {}
-  }
-
-  async componentDidMount() {
-    this.setState({account: await getAccount(),
-      networkName: await getNetworkName()})
-  }
-
-  static getDerivedStateFromProps(prev, nextProps) {
-    return nextProps
-  }
-
-  render () {
-    if (this.props.notValidNetwork)  {
-      return <Alert>Checking network: currently only <strong>kovan</strong> and &nbsp;
-      <strong>ropsten</strong> networks are supported</Alert>
-    } else if (this.props.isLoading) {
-      return <Row><span>Loading...</span></Row>
-    } else  {
-      let FirstRow = () => isTransEnabled() ?
-        (<span>Account: {this.state.account}
-          {this.state.networkName === 'main' ? '' :
-          ` (network: ${this.state.networkName})` }</span>) :
-        (<Alert bsStyle="warning">Currently you run the application in
-          read-only mode on <strong>{this.state.networkName}</strong> network
-          with
-          limited and unstable functionality. For transaction processing
-          you need to have web3 extensions, e.g.
-        <ExternalLink href="https://metamask.io/" a="Metamask"/>,
-        and unlocked account</Alert>)
-        let OptionTableRouted = () => (<OptionTable underlying={this.props.underlying}
-          basisToken={this.props.basisToken}/>)
-        let OptionLineCreatorRouted =  () => (<OptionLineCreator underlying={this.props.underlying}
-        basisToken={this.props.basisToken}/>)
-      return (
-        <div>
-          <FirstRow/>
-          <Nav bsStyle="tabs" activeKey="1">
-            <LinkContainer to="/app/option-table">
-              <NavItem eventKey="1">Option Table</NavItem>
-            </LinkContainer>
-            <LinkContainer to="/app/weth-convertor">
-              <NavItem eventKey="2">Weth Convertor</NavItem>
-            </LinkContainer>
-            <LinkContainer to="/app/option-line-creation">
-              <NavItem eventKey="3">Option Line Creation</NavItem>
-            </LinkContainer>
-          </Nav>
-          <div>
-            <Route exact path="/app/option-table" component={OptionTableRouted}/>
-            <Route exact path="/app/option-line-creation" component={OptionLineCreatorRouted}/>
-            <Route exact path="/app/weth-convertor" component={WethConvertor}/>
-          </div>
-        </div>
-      )
-    }
-  }
-}
-
-export class OptionApp extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      underlying: null,
-      basisToken: null,
-      isNotValidNetwork: true
-    }
-  }
-
-  async isValidNetwork () {
-    let netId = await getNetworkId()
-    console.log("netId: " + netId)
-    return ([3, 42, 5777].indexOf(Number(netId)) >= 0)
-  }
-
-  async componentWillMount() {
-    this.setState({underlying: (await getWethInstance()).address,
-        basisToken: (await getDaiInstance()).address,
-        isNotValidNetwork: !(await this.isValidNetwork())})
-
-  }
-
-  async onChangeAccount() {
-    await this.setState({isNotValidNetwork: !(await this.isValidNetwork())})
-    this.forceUpdate()
-  }
-
-  render() {
-    return (
-      <Grid>
-        <Row><h1 className="App-title">Crypto Token Options</h1></Row>
-              <Content notValidNetwork={this.state.isNotValidNetwork}
-                  isLoading={this.state.basisToken == null || this.state.underlying == null}
-                  underlying={this.state.underlying}
-                  basisToken={this.state.basisToken}
-                  />
-        </Grid>
-    )
-
-  }
-}
 
 const MainRoutes = () => (
     <div>

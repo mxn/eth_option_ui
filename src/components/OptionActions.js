@@ -377,12 +377,8 @@ export default class OptionActions extends Component {
 
   async exerciseOptionsWithExchange() {
     console.log("exerciseOptionsWithExchange")
-    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
-    let transObj = await getDefaultTransObj()
-    let caution = this.getExerciseExchangeCaution()
-    if (caution) {
-      return caution
-    }
+//    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
+//    let transObj = await getDefaultTransObj()
     this.setState({ showExchDialog: true })
     return null
     /* optionPair.exerciseWithTrade(this.props.optionPairAddress,
