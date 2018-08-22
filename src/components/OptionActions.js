@@ -340,7 +340,10 @@ export default class OptionActions extends Component {
     let makeWithCaution = (caution) => {
       if (caution) {
         console.log("Caution is detected")
-        caution.onOk = (val => fnToExec(val))
+        caution.onOk = (val => {
+          fnToExec(val)
+          this.setState({caution: null})
+        })
       }
       this.setState({ caution: caution })
       if (!caution) {
