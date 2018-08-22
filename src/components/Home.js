@@ -2,6 +2,7 @@ import {ExternalLink, ConceptLink} from './Commons.js'
 
 import React, { Component } from 'react'
 import {Jumbotron} from 'react-bootstrap'
+import {Link} from 'react-router-dom'
 
 
 export default class Home extends Component {
@@ -15,7 +16,7 @@ export default class Home extends Component {
             <p>The more details can be read in the <ConceptLink/>
             </p>
             <p>
-            Currently, you can play the demo on <strong>Try It!</strong> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
+            Currently, you can play the demo on <Link to="app/option-table">Try It!</Link> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
             </p>
             <p>
             Under <strong>Help</strong> tab you can find the screencasts with the examples of option operations, inclusive OTC trading. For OTC trading one can use <ExternalLink href="https://0xproject.com/portal/generate" a="this 0x portal link"/>
