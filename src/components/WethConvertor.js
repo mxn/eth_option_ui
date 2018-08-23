@@ -1,6 +1,6 @@
 import {promisify, setStatePropFromEvent,
   getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES, isTransEnabled,
-  publishTokenMutation, getBalance, getAccount, getDefaultTransObj} from './Core'
+  publishTokenMutation, getBalance, getEthBalance, getAccount, getDefaultTransObj} from './Core'
 import TransactionStatus from './TransactionStatus'
 import NumberEntryGroup from './NumberEntryGroup'
 
@@ -44,7 +44,9 @@ export default class WethConvertor extends Component {
 
   async refreshBalances() {
     let wethInstance = await getWethInstance()
-    const balEth = await getBalance(this.state.account)
+    const balEth = await getEthBalance()
+    console.log("balEth", balEth)
+    console.log("acc", this.state.account)
     this.setState({currentBalanceEth: this.web3utils
       .toDecimal(this.web3utils.fromWei(balEth,"ether"))})
     this.setState({currentBalanceWeth:

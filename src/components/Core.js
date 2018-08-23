@@ -201,6 +201,11 @@ export const onMined = (transNo, callback)  => {
     })
 }
 
+export const getEthBalance = async () => {
+  let account = await getAccount()
+  return promisify(cb => web3.eth.getBalance(account, cb))
+}
+
 export const getBalance = async (token) => {
     let erc20 = await getErc20At(token)
     let account = await getAccount()
