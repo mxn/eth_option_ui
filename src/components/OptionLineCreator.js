@@ -20,7 +20,7 @@ export default class OptionLineCreator extends Component {
     }
   }
 
-  async componentDidMount() {
+  async componentWillMount() {
     this.handleEvents = this.handleEvents.bind(this)
     this.handleDateChange = this.handleDateChange.bind(this)
   }
