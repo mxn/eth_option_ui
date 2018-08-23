@@ -2,7 +2,7 @@ import {promisify, setStatePropFromEvent,
   getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES, isTransEnabled,
   publishTokenMutation, getBalance, getEthBalance, getAccount, getDefaultTransObj} from './Core'
 import TransactionStatus from './TransactionStatus'
-import NumberEntryGroup from './NumberEntryGroup'
+import NumberEntryGroup  from './NumberEntryGroupRo'
 
 import PubSub from 'pubsub-js'
 import React, { Component } from 'react'
@@ -108,7 +108,7 @@ export default class WethConvertor extends Component {
           <Col sm={6}>
             <NumberEntryGroup label="Wrap ETH" button="-> WETH"
               onClick={v => this.convertEth(v)}
-              max={this.state.currentBalanceEth}
+              maxValue={this.state.currentBalanceEth}
               placeholder="Please enter amount of ETH to be converted"
             />
           </Col>
@@ -117,7 +117,7 @@ export default class WethConvertor extends Component {
           <Col sm={6}>
             <NumberEntryGroup label="Un-wrap ETH" button="-> ETH"
               onClick={v => this.unwarpWeth(v)}
-              max={this.state.currentBalanceWeth}
+              maxValue={this.state.currentBalanceWeth}
             />
           </Col>
         </Row>
