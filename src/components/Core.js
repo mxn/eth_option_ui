@@ -63,7 +63,7 @@ export const promisify = (inner) => {
     );
 }
 
-const getContractInstance = async(json, address) => {
+export const getContractInstance = async(json, address) => {
   let contract = getWeb3().eth.contract(json.abi)
   if (address) {
     return contract.at(address)
@@ -206,9 +206,9 @@ export const getEthBalance = async () => {
   return promisify(cb => web3.eth.getBalance(account, cb))
 }
 
-export const getBalance = async (token) => {
+export const getBalance = async (token, accountOf) => {
     let erc20 = await getErc20At(token)
-    let account = await getAccount()
+    let account = accountOf || (await getAccount())
     try {
       const balBigNumber = await promisify(cb =>  erc20.balanceOf(account, cb))
       return balBigNumber.dividedBy(DECIMAL_FACTOR).toNumber()

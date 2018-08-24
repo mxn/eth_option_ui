@@ -5,6 +5,8 @@ import {
   getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress
 } from './Core'
 
+import {dumpValues} from './Tracing'
+
 import React, { Component } from 'react'
 import PubSub from 'pubsub-js'
 import {
@@ -115,6 +117,8 @@ export default class OptionActions extends Component {
   }
 
   async componentDidMount() {
+    //TODO remove
+    await dumpValues()
     this.actions = {
       WRITE: this.writeOptions,
       EXERCISE: this.exerciseOptions,
@@ -396,13 +400,18 @@ export default class OptionActions extends Component {
       getExchangeAdapterAddress(),
     getDefaultTransObj()])
       .then(
-        (arr) => {
+        async (arr) => {
           var optionPair, exchAddr, transObj
           [optionPair, exchAddr, transObj] = arr
-          return promisify(cb => optionPair.exerciseWithTrade(exchAddr,
-            DECIMAL_FACTOR.mul(this.state.value), this.state.inputValue, transObj, cb))
-        }
-      )
+          let underlyingQty = await promisify(cb => optionPair.underlyingQty(cb))
+          let minPrice = this.state.inputValue
+          let amountToGive = DECIMAL_FACTOR.mul(this.state.value)
+          let minAmountToGet = amountToGive.mul(underlyingQty).mul(minPrice)
+          console.log("minAmountToGet", minAmountToGet)
+          console.log("parameters: ", [optionPair, exchAddr, transObj])
+          return promisify(cb => optionPair.exerciseWithTrade(
+            amountToGive, minAmountToGet, exchAddr,transObj, cb))
+        })
   }
 
   async componentWillUnmount() {
