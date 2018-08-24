@@ -19,11 +19,14 @@ export class NumberEntryGroupExt extends Component {
 export  default class NumberEntryGroup extends Component {
   state = {isProcessing: false, value: 0}
   render() {
-    return <NumberEntryGroupRo {...this.props} onButtonClick={async () => {
+    return <NumberEntryGroupRo {...this.props} onButtonClick={async () => { 
       this.setState({isProcessing: true})
-      await this.props.onClick()
-      this.setState({isProcessing: false})
-    }} onChange={v => this.setState({value: v})} value={this.state.value} 
+      try {
+        await this.props.onClick(this.state.value)
+      } finally {
+        this.setState({isProcessing: false})
+      }
+     }} onChange={v => this.setState({value: v})} value={this.state.value} 
     isProcessing={this.state.isProcessing}/>
   }
 }

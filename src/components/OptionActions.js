@@ -2,46 +2,56 @@ import {
   getBalance, getOptionFactoryInstance, isTransEnabled,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
-  getAllowance, getFeeCalculatorInstance, getTokenName
+  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress
 } from './Core'
 
 import React, { Component } from 'react'
 import PubSub from 'pubsub-js'
 import {
   DropdownButton, MenuItem, FormGroup, InputGroup, FormControl, Modal,
-  Button, Row
-} from 'react-bootstrap'
+  Button, Row} from 'react-bootstrap'
 
 const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCISE_EXCHANGE = "EXERCISE_EXCHANGE", WITHDRAW = "WITHDRAW"
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
 
-class ActionDialog extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      value: null
-    }
+const InputPrice = ({ onChange, show, value, onOk, onCancel }) => {
+  if (!show) {
+    return null
   }
-
-  render() {
-    const { caution, onCancel } = this.props
-    if (!caution) {
-      return null
-    }   
-    const { title, body, isError, onOk, input } = caution
-    let Input = (isError || !input) ? null : () => {
-      return (
+  return (
+    <Modal.Dialog>
+      <Modal.Header>
+        Enter minimum price for excahnge
+      </Modal.Header>
+      <Modal.Body>
         <Row>
-          <InputGroup>
-            <FormControl type="number" value={this.state.value}
-              onChange={(v) => {
-                this.setState({ value: v.target.value })
-              }} />
-          </InputGroup>
+          Ener minimum price for Oasis Exchange, for which you are ready to sell underlying
         </Row>
-      )
-    }
+        <Row>
+          <FormGroup>
+            <InputGroup>
+              <FormControl type="number" value={value}
+                onChange={(ev) => {
+                  onChange(ev.target.value)
+                }} />
+            </InputGroup>
+            <Button bsStyle="success" onClick={onOk}>OK</Button>
+            <Button onClick={onCancel}>Close</Button>
+          </FormGroup>
+        </Row>
+      </Modal.Body>
+    </Modal.Dialog>
+
+  )
+}
+
+const ActionDialog = ({ caution, onCancel }) => {
+  if (!caution) {
+    return (<div />)
+  }
+  const { title, body, isError, onOk } = caution
+
   return (
     <Modal.Dialog bsStyle="danger">
       <Modal.Header>
@@ -49,21 +59,14 @@ class ActionDialog extends Component {
       </Modal.Header>
 
       <Modal.Body>
-        <Row>
-          {body}
-        </Row>
-        <Input/>
+        {body}
       </Modal.Body>
 
       <Modal.Footer>
-        <Button bsStyle="success" onClick={() => onOk(this.state.value)} disabled={isError}>OK</Button>
-        <Button onClick={() => onCancel()}>Close</Button>
+        <Button bsStyle="success" onClick={onOk} disabled={isError}>OK</Button>
+        <Button onClick={onCancel}>Close</Button>
       </Modal.Footer>
     </Modal.Dialog>)
-
-  }
-
-  
 }
 
 function getCautionMessage(conditions) {
@@ -95,7 +98,19 @@ export default class OptionActions extends Component {
       isLoading: false,
       value: 0,
       availableActions: [],
-      showExchDialog: false
+      showExchDialog: false,
+      inputShow: false,
+      inputValue: 0,
+      inputOnOk: async () => {
+
+        this.setState({ inputShow: false, isLoading: true })
+        try {
+          await this.exerciseOptionsWithExchange(this.state.inputValue)
+        } finally {
+          this.setState({ isLoading: false })
+        }
+      },
+      inputOnCancel: () => this.setState({ inputShow: false, isLoading: false })
     }
   }
 
@@ -236,18 +251,7 @@ export default class OptionActions extends Component {
       `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`]]
-    //TODO
-    let caution = getCaution(conditions, "You cannot exercise options", true)
-    //console.log("exch caution", caution)
-    if (caution) {
-      return caution
-    }
-    return {
-      title: "You are about to exercise option via exchange",
-      body: "You are about to exercise option via exchange",
-      isError: false,
-      input: true
-    }
+    return getCaution(conditions, "You cannot exercise options", true)
   }
 
   getAnnihilateCaution() {
@@ -319,14 +323,25 @@ export default class OptionActions extends Component {
     let makeWithCaution = (caution) => {
       if (caution) {
         console.log("Caution is detected")
-        caution.onOk = (val => {
-          fnToExec(val)
-          this.setState({caution: null})
+        caution.onOk = (() => {
+          fnToExec()
+          this.setState({ caution: false })
         })
       }
-      this.setState({ caution: caution })
+      this.setState({ caution: caution ? caution : false })
       if (!caution) {
         fnToExec()
+      }
+    }
+    let makeWithCautionAndInput = (caution) => {
+      if (caution) {
+        caution.onOk = (() => {
+          this.setState({ inputShow: true, caution: false })
+        })
+      }
+      this.setState({ caution: caution ? caution : false })
+      if (!caution) {
+        this.setState({ inputShow: true, caution: false })
       }
     }
     switch (ek) {
@@ -340,7 +355,7 @@ export default class OptionActions extends Component {
         makeWithCaution(this.getExerciseCaution())
         break
       case EXERCISE_EXCHANGE:
-        makeWithCaution(this.getExerciseExchangeCaution())
+        makeWithCautionAndInput(this.getExerciseExchangeCaution())
         break
       default: fnToExec()
     }
@@ -375,16 +390,19 @@ export default class OptionActions extends Component {
       DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
   }
 
-  async exerciseOptionsWithExchange() {
-    console.log("exerciseOptionsWithExchange")
-//    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
-//    let transObj = await getDefaultTransObj()
-    this.setState({ showExchDialog: true })
-    return null
-    /* optionPair.exerciseWithTrade(this.props.optionPairAddress,
-      DECIMAL_FACTOR.mul(this.state.value), ) */
-    /* return promisify(cb => optionFactory.exerciseOptions(this.props.optionPairAddress,
-      DECIMAL_FACTOR.mul(this.state.value), transObj, cb)) */
+  async exerciseOptionsWithExchange(minPrice) {
+    console.log("exerciseOptionsWithExchange", minPrice)
+    return Promise.all([getOptionPairInstance(this.props.optionPairAddress),
+      getExchangeAdapterAddress(),
+    getDefaultTransObj()])
+      .then(
+        (arr) => {
+          var optionPair, exchAddr, transObj
+          [optionPair, exchAddr, transObj] = arr
+          return promisify(cb => optionPair.exerciseWithTrade(exchAddr,
+            DECIMAL_FACTOR.mul(this.state.value), this.state.inputValue, transObj, cb))
+        }
+      )
   }
 
   async componentWillUnmount() {
@@ -394,7 +412,8 @@ export default class OptionActions extends Component {
   render() {
     return (
       <div>
-        <ActionDialog caution={this.state.caution} onCancel={() => this.setState({ caution: null, isLoading: false })} />
+        <ActionDialog caution={this.state.caution} onCancel={() => this.setState({ caution: false, isLoading: false })} />
+        <InputPrice onChange={v => this.setState({ inputValue: v })} value={this.state.inputValue} show={this.state.inputShow} onOk={this.state.inputOnOk} onCancel={this.state.inputOnCancel} />
         <FormGroup>
           <InputGroup>
             <FormControl type="number" value={this.state.value} disabled={this.state.isLoading || !isTransEnabled()} onChange={(ev) => this.setState({ value: ev.target.value })} />

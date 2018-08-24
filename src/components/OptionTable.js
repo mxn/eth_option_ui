@@ -68,10 +68,10 @@ export default class OptionTable extends Component {
         <h4>Option Table</h4>
       </Row>
       <Row>
-          <TokenDetail label="Basis" token={this.props.basisToken} targetApproval={this.state.optionFactory}/>
+          <TokenDetail key="tokenBasis" label="Basis" token={this.props.basisToken} targetApproval={this.state.optionFactory}/>
       </Row>
       <Row>
-          <TokenDetail label="Underlying" token={this.props.underlying} targetApproval={this.state.optionFactory}/>
+          <TokenDetail key="tokenUnderlying" label="Underlying" token={this.props.underlying} targetApproval={this.state.optionFactory}/>
       </Row>
       {Object.keys(groupedData).map(dt =>
           <OptionDateEntry key={"groupDate_" + dt} date={dt}

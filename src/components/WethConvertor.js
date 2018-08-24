@@ -106,8 +106,8 @@ export default class WethConvertor extends Component {
         </Row>
         <Row>
           <Col sm={6}>
-            <NumberEntryGroup label="Wrap ETH" button="-> WETH"
-              onClick={v => this.convertEth(v)}
+            <NumberEntryGroup key="1" label="Wrap ETH" button="-> WETH"
+              onClick={(v) => this.convertEth(v)}
               maxValue={this.state.currentBalanceEth}
               placeholder="Please enter amount of ETH to be converted"
             />
@@ -115,7 +115,7 @@ export default class WethConvertor extends Component {
         </Row>
         <Row>
           <Col sm={6}>
-            <NumberEntryGroup label="Un-wrap ETH" button="-> ETH"
+            <NumberEntryGroup key="2" label="Un-wrap ETH" button="-> ETH"
               onClick={v => this.unwarpWeth(v)}
               maxValue={this.state.currentBalanceWeth}
             />
