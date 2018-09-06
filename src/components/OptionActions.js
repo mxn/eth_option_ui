@@ -2,7 +2,8 @@ import {
   getBalance, getOptionFactoryInstance, isTransEnabled,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
-  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress, getExchangeAdapter
+  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress, getExchangeAdapter, 
+  getFeeCalculatorAt
 } from './Core'
 
 import {dumpValues} from './Tracing'
@@ -13,7 +14,7 @@ import {
   DropdownButton, MenuItem, FormGroup, InputGroup, FormControl, Modal,
   Button, Row} from 'react-bootstrap'
 
-const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCISE_EXCHANGE = "EXERCISE_EXCHANGE", WITHDRAW = "WITHDRAW"
+const WRITE = "WRITE", WRITE_FEE_ETH= "WRITE_FEE_ETH", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCISE_EXCHANGE = "EXERCISE_EXCHANGE", WITHDRAW = "WITHDRAW"
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
 
@@ -120,6 +121,7 @@ export default class OptionActions extends Component {
     await dumpValues()
     this.actions = {
       WRITE: this.writeOptions,
+      WRITE_FEE_ETH: this.withdrawOptionsWithFeeInEth,
       EXERCISE: this.exerciseOptions,
       EXERCISE_EXCHANGE: this.exerciseOptionsWithExchange,
       WITHDRAW: this.withdrawOptions,
@@ -128,6 +130,7 @@ export default class OptionActions extends Component {
     this.actionToLabel = Object.keys(this.actions)
       .reduce((prev, el) => { prev[el] = el.substring(0, 1) + el.substring(1).toLowerCase(); return prev }, {})
     this.actionToLabel[EXERCISE_EXCHANGE] = "Exercise with exchange"
+    this.actionToLabel[WRITE_FEE_ETH] = "Write"
     await this.setAddresses()
     await Promise.all([this.setBalances(), this.setAllowances(),
     this.setOptionPairDetails()])
@@ -220,8 +223,10 @@ export default class OptionActions extends Component {
       })
       .filter((action) => {
         switch (action) {
-          case WRITE:
+          case WRITE_FEE_ETH: //pay directly with ETH
             return true
+          case WRITE:
+            return false //currently temporary disabled, as we pay fee in ETH
           case EXERCISE_EXCHANGE:
           case EXERCISE:
             return this.state.balances.tokenOption > 0 &&
@@ -239,7 +244,7 @@ export default class OptionActions extends Component {
 
 
 
-  async getWriteCaution() {
+  async getWriteCaution(isFeeInEth) {
     var feeTokenAddress, fee
     [feeTokenAddress, fee] = await this.getFee()
     let feeDecimal = fee.dividedBy(DECIMAL_FACTOR).toNumber()
@@ -256,10 +261,11 @@ export default class OptionActions extends Component {
           , need  ${this.state.value * this.state.optionPairDetails.underlyingQty})
           of underlying`]
     ]
+    console.log(isFeeInEth)
     let caution = getCaution(conditions, "You cannot write requested amount!", true)
     return caution ? caution : {
       title: "Write Option",
-      body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${feeTokenName}`
+      body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${isFeeInEth ? 'ETH' :feeTokenName }`
     }
   }
 
@@ -367,6 +373,9 @@ export default class OptionActions extends Component {
       case WRITE:
         makeWithCaution(await this.getWriteCaution())
         break
+      case WRITE_FEE_ETH:
+        makeWithCaution(await this.getWriteCaution(true))
+        break
       case ANNIHILATE:
         makeWithCaution(this.getAnnihilateCaution())
         break
@@ -385,6 +394,22 @@ export default class OptionActions extends Component {
     let transObj = await getDefaultTransObj()
     return promisify(cb => optionFactory.writeOptions(this.props.optionPairAddress,
       web3utils.toBigNumber(this.state.value).mul(DECIMAL_FACTOR),
+      transObj, cb))
+  }
+
+  async withdrawOptionsWithFeeInEth() {
+    let amountToWrite = web3utils.toBigNumber(this.state.value).mul(DECIMAL_FACTOR)
+    let optionFactory = await getOptionFactoryInstance()
+    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)  
+    let feeCalculatorAddress = await promisify(cb =>  optionPair.feeCalculator(cb))
+    let feeCalculator = await getFeeCalculatorAt(feeCalculatorAddress) 
+    var feeTokenAddress, feeAmount
+    [feeTokenAddress, feeAmount]  = await promisify(cb => 
+      feeCalculator.calcFee(optionPair.address, amountToWrite, cb))
+    console.log("feeTokenAddress", feeTokenAddress)
+    let transObj = await getDefaultTransObj()
+    transObj["value"] = feeAmount
+    return promisify(cb => optionFactory.writeOptionsWithEth(this.props.optionPairAddress, amountToWrite,
       transObj, cb))
   }
 

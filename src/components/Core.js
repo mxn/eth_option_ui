@@ -136,6 +136,10 @@ export const getErc20At = async (token) => {
   return getContractInstance(jsonERC20, token)
 }
 
+export const getFeeCalculatorAt = async (calcAddress) => {
+  return getContractInstance(jsonFeeCalculator, calcAddress)
+}
+
 export const getOptionFactoryInstance = async () => {
   let netId = await getNetworkId()
   //console.log(netId)
