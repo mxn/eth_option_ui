@@ -1,7 +1,6 @@
 import {promisify, setStatePropFromEvent,
   getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES, isTransEnabled,
   publishTokenMutation, getBalance, getEthBalance, getAccount, getDefaultTransObj} from './Core'
-import TransactionStatus from './TransactionStatus'
 import NumberEntryGroup  from './NumberEntryGroupRo'
 
 import PubSub from 'pubsub-js'
@@ -100,9 +99,6 @@ export default class WethConvertor extends Component {
               </tbody>
             </Table>
           </Col>
-        </Row>
-        <Row>
-          <TransactionStatus transactionHash={this.state.transactionHash}/>
         </Row>
         <Row>
           <Col sm={6}>
