@@ -158,6 +158,9 @@ export const getExchangeAdapterAddress = async () => {
   return exchangeAdapter.address
 }
 
+export const getExchangeAdapter = () => 
+  getContractInstance(jsonExchangeAdapterOasisImpl)
+
 export const getDefaultFeeCalculatorAddress = async () => {
   let optFactory = await getOptionFactoryInstance()
   console.log (optFactory);

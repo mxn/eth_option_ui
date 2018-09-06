@@ -2,7 +2,7 @@ import {
   getBalance, getOptionFactoryInstance, isTransEnabled,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
-  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress
+  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress, getExchangeAdapter
 } from './Core'
 
 import {dumpValues} from './Tracing'
@@ -17,7 +17,7 @@ const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCIS
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
 
-const InputPrice = ({ onChange, show, value, onOk, onCancel }) => {
+const InputPrice = ({ onChange, show, value, onOk, onCancel, price }) => {
   if (!show) {
     return null
   }
@@ -28,7 +28,8 @@ const InputPrice = ({ onChange, show, value, onOk, onCancel }) => {
       </Modal.Header>
       <Modal.Body>
         <Row>
-          Ener minimum price for Oasis Exchange, for which you are ready to sell underlying
+          Enter a minimum price for Oasis Exchange (current price is {price}), for which you are ready to sell underlying. 
+          Note that the price should not be less as strike price! 
         </Row>
         <Row>
           <FormGroup>
@@ -72,7 +73,6 @@ const ActionDialog = ({ caution, onCancel }) => {
 }
 
 function getCautionMessage(conditions) {
-  console.log("conditions", conditions)
   if (conditions.every(el => el[0])) {
     return null
   }
@@ -80,9 +80,7 @@ function getCautionMessage(conditions) {
 }
 
 function getCaution(conditions, title, isError) {
-  console.log("conditions in getCaution", conditions)
   let cautionMsg = getCautionMessage(conditions)
-  console.log(cautionMsg)
   if (cautionMsg) {
     return {
       title: title,
@@ -109,6 +107,7 @@ export default class OptionActions extends Component {
         try {
           await this.exerciseOptionsWithExchange(this.state.inputValue)
         } finally {
+          publishTokenMutation(serieTokens.map(name => this.state.addresses[name]))
           this.setState({ isLoading: false })
         }
       },
@@ -133,12 +132,13 @@ export default class OptionActions extends Component {
     await Promise.all([this.setBalances(), this.setAllowances(),
     this.setOptionPairDetails()])
     this.setState({ availableActions: await this.getAvailableActions() })
-
+    this.setExchangeUnderlyingPrice()
     this.subscriber = PubSub.subscribe(TOPIC_AFFECTED_BALANCES,
       async () => {
         this.setState({ availableAction: await this.getAvailableActions() })
         this.setBalances()
         this.setAllowances()
+        this.setExchangeUnderlyingPrice()
       })
   }
 
@@ -174,8 +174,27 @@ export default class OptionActions extends Component {
     let optionPairDetails = await Promise.all(optionPairProps
       .map(async prop => await promisify(cb => optionPair[prop].call(cb))))
     let res = {}
-    optionPairProps.forEach((el, i) => res[el] = web3utils.toDecimal(optionPairDetails[i]))
+    optionPairProps.forEach((el, i) => res[el] =  web3utils.toDecimal(optionPairDetails[i]))
     this.setState({ optionPairDetails: res })
+  }
+
+  async setExchangeUnderlyingPrice() {
+    if (this.state.optionPairDetails 
+      && this.state.addresses.underlying 
+      && this.state.addresses.basisToken) {
+      let exchangeAdapter = await getExchangeAdapter()
+      let underlyingAmountToSell = this.state.balances.tokenOption / this.state.optionPairDetails.underlyingQty //TOOD underlynig qty
+      let amountToGet = await promisify(cb => exchangeAdapter
+        .getAmountToGet(this.state.addresses.underlying, 
+          underlyingAmountToSell, 
+          this.state.addresses.basisToken,
+        cb))
+      this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountToSell).toNumber()})  
+     
+    } else {
+      
+      this.setState({exchangeUnderlyingPrice: 0.0})
+    }
   }
 
   async getFee() {
@@ -245,8 +264,6 @@ export default class OptionActions extends Component {
   }
 
   getExerciseExchangeCaution() {
-    console.log("getExerciseExchangeCaution")
-    console.log(this.state.optionPairDetails)
     let conditions = [
       [this.state.balances.tokenOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenOption},
@@ -279,8 +296,6 @@ export default class OptionActions extends Component {
   }
 
   getExerciseCaution() {
-    console.log("getExerciseCaution")
-    console.log(this.state.optionPairDetails)
     let conditions = [
       [this.state.balances.tokenOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenOption},
@@ -398,7 +413,7 @@ export default class OptionActions extends Component {
     console.log("exerciseOptionsWithExchange", minPrice)
     return Promise.all([getOptionPairInstance(this.props.optionPairAddress),
       getExchangeAdapterAddress(),
-    getDefaultTransObj()])
+      getDefaultTransObj()])
       .then(
         async (arr) => {
           var optionPair, exchAddr, transObj
@@ -407,8 +422,6 @@ export default class OptionActions extends Component {
           let minPrice = this.state.inputValue
           let amountToGive = DECIMAL_FACTOR.mul(this.state.value)
           let minAmountToGet = amountToGive.mul(underlyingQty).mul(minPrice)
-          console.log("minAmountToGet", minAmountToGet)
-          console.log("parameters: ", [optionPair, exchAddr, transObj])
           return promisify(cb => optionPair.exerciseWithTrade(
             amountToGive, minAmountToGet, exchAddr,transObj, cb))
         })
@@ -422,7 +435,8 @@ export default class OptionActions extends Component {
     return (
       <div>
         <ActionDialog caution={this.state.caution} onCancel={() => this.setState({ caution: false, isLoading: false })} />
-        <InputPrice onChange={v => this.setState({ inputValue: v })} value={this.state.inputValue} show={this.state.inputShow} onOk={this.state.inputOnOk} onCancel={this.state.inputOnCancel} />
+        <InputPrice onChange={v => this.setState({ inputValue: v })} value={this.state.inputValue} show={this.state.inputShow} onOk={this.state.inputOnOk} onCancel={this.state.inputOnCancel}
+        price={this.state.exchangeUnderlyingPrice} />
         <FormGroup>
           <InputGroup>
             <FormControl type="number" value={this.state.value} disabled={this.state.isLoading || !isTransEnabled()} onChange={(ev) => this.setState({ value: ev.target.value })} />
