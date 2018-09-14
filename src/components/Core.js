@@ -154,6 +154,7 @@ export const getOptionFactoryInstance = async () => {
 }
 
 export const getRequestHandlerInstance = () => {
+  let netId = await getNetworkId()
   switch (Number(netId)) {
     case 42: //kovan
       return getContractInstance(jsonOptionFactory, "0x80f9d6fb9b6d539f5a48fa27404e82e97d532ef4")
