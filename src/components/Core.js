@@ -164,8 +164,9 @@ export const getRequestHandlerInstance = async () => {
 }
 
 export const getExchangeAdapterAddress = async () => {
-  let exchangeAdapter = await getContractInstance(jsonExchangeAdapterOasisImpl)
-  return exchangeAdapter.address
+  /* let exchangeAdapter = await getContractInstance(jsonExchangeAdapterOasisImpl, "0x898db49742a048cd33da8905db74049e251c26c9625cad59d9ddf17f9b46cb32")
+  return exchangeAdapter.address */
+  return "0x898db49742a048cd33da8905db74049e251c26c9625cad59d9ddf17f9b46cb32"
 }
 
 export const getExchangeAdapter = () => 
