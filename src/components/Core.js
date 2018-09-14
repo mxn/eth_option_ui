@@ -170,7 +170,7 @@ export const getExchangeAdapterAddress = async () => {
 }
 
 export const getExchangeAdapter = () => 
-  getContractInstance(jsonExchangeAdapterOasisImpl)
+  getContractInstance(jsonExchangeAdapterOasisImpl, "0x898db49742a048cd33da8905db74049e251c26c9625cad59d9ddf17f9b46cb32")
 
 export const getDefaultFeeCalculatorAddress = async () => {
   let optFactory = await getOptionFactoryInstance()
