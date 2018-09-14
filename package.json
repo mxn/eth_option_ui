@@ -4,6 +4,7 @@
   "description": "UI for eth_option",
   "scripts": {
     "config-ropsten": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp deployment/ropsten/* ${TARGET_DIR}/",
+    "config-kovan": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp deployment/kovan/* ${TARGET_DIR}/",
     "config-webtest": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp ../eth_option/build/contracts/* ${TARGET_DIR}/",
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -11,7 +12,8 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "deploy-s3": "rm -rf build/; npm run build && npm run config-ropsten && aws s3 sync build/ s3://www.erc20-options.com"
+    "deploy-s3": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://www.erc20-options.com",
+    "deploy-s3-test": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://test.erc20-options.com" 
   },
   "repository": {
     "type": "git",

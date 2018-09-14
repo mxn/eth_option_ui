@@ -32,7 +32,7 @@ export const getWeb3 = () => {
     web3 =  new Web3(window.web3.currentProvider)
     console.log('use current provider')
   } else {
-    web3 = new Web3(new Web3.providers.HttpProvider("https://pkovan.infura.io"))
+    web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io"))
     console.log('use fallback HttpProvider')
   }
   return web3
@@ -147,14 +147,19 @@ export const getOptionFactoryInstance = async () => {
     case 3: //ropsten
       return getContractInstance(jsonOptionFactory, "0xb7b68150022054daf980461a99d19d807afa8ca0")
     case 42: //kovan
-      return getContractInstance(jsonOptionFactory, "0xc07893435202f6a3434bd5afd36c0d415a8a0c90")
+      return getContractInstance(jsonOptionFactory, "0x7a2637f799e183e276cc077c300bbff6f78df075")
     default:
       return getContractInstance(jsonOptionFactory)
     }
 }
 
 export const getRequestHandlerInstance = () => {
-  return getContractInstance(jsonRequestHandler)
+  switch (Number(netId)) {
+    case 42: //kovan
+      return getContractInstance(jsonOptionFactory, "0x80f9d6fb9b6d539f5a48fa27404e82e97d532ef4")
+    default:
+      return getContractInstance(jsonOptionFactory)
+    }
 }
 
 export const getExchangeAdapterAddress = async () => {
