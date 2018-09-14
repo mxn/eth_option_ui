@@ -153,7 +153,7 @@ export const getOptionFactoryInstance = async () => {
     }
 }
 
-export const getRequestHandlerInstance = () => {
+export const getRequestHandlerInstance = async () => {
   let netId = await getNetworkId()
   switch (Number(netId)) {
     case 42: //kovan
