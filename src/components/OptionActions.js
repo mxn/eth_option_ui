@@ -6,8 +6,6 @@ import {
   getFeeCalculatorAt
 } from './Core'
 
-import {dumpValues} from './Tracing'
-
 import React, { Component } from 'react'
 import PubSub from 'pubsub-js'
 import {
@@ -117,8 +115,6 @@ export default class OptionActions extends Component {
   }
 
   async componentDidMount() {
-    //TODO remove
-    await dumpValues()
     this.actions = {
       WRITE: this.writeOptions,
       WRITE_FEE_ETH: this.withdrawOptionsWithFeeInEth,
