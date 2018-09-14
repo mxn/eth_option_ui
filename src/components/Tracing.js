@@ -1,5 +1,5 @@
 import {
-  getBalance, getContractInstance, getWethInstance,
+  getBalance, getWethInstance,
   getDaiInstance
 } from './Core'
 
