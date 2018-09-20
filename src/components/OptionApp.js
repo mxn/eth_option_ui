@@ -27,8 +27,8 @@ class Content extends Component {
 
   render () {
     if (this.props.notValidNetwork)  {
-      return <Alert>Checking network: currently only <strong>kovan</strong> and &nbsp;
-      <strong>ropsten</strong> networks are supported</Alert>
+      return <Alert>Checking network: currently only <strong>kovan</strong> network is supported. 
+      It is recommended to use Chrome browser with <ExternalLink href="https://metamask.io/" a="Metamask"/> extension and an unlocked account</Alert>
     } else if (this.props.isLoading) {
       return <Row><span>Loading...</span></Row>
     } else  {

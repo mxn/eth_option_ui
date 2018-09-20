@@ -50,6 +50,7 @@ const Help = () => (
       <ScreenCastRow name="Create Option Serie and Writing Options" src="https://www.youtube.com/embed/z-HqmaYFpGE"/>
       <ScreenCastRow name="OTC Trading Options" src="https://www.youtube.com/embed/Ed7_bkUnPzM"/>
       <ScreenCastRow name="Exercise options" src="https://www.youtube.com/embed/qJY2KpnrClw"/>
+      <ScreenCastRow name="Exercise options with exchange" src="https://www.youtube.com/embed/fM1Tlisu6h4"/>
       <ScreenCastRow name="Withdraw via anti-options options" src="https://www.youtube.com/embed/qBhJnKGoKt0"/>
     </Jumbotron>
 
