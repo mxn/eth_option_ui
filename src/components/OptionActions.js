@@ -182,14 +182,20 @@ export default class OptionActions extends Component {
       && this.state.addresses.underlying 
       && this.state.addresses.basisToken) {
       let exchangeAdapter = await getExchangeAdapter()
-      let underlyingAmountToSell = this.state.balances.tokenOption / this.state.optionPairDetails.underlyingQty //TOOD underlynig qty
+      let underlyingAmountToSell = this.state.balances.tokenOption / this.state.optionPairDetails.underlyingQty
+      let underlyingAmountTooSellBn =  DECIMAL_FACTOR.mul(underlyingAmountToSell)
       let amountToGet = await promisify(cb => exchangeAdapter
         .getAmountToGet(this.state.addresses.underlying, 
-          underlyingAmountToSell, 
+          underlyingAmountTooSellBn,  
           this.state.addresses.basisToken,
         cb))
-      this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountToSell).toNumber()})  
-     
+        console.log([this.state.addresses.underlying, 
+          underlyingAmountTooSellBn, 
+        this.state.addresses.basisToken])
+      console.log("amount to get: ", amountToGet.toNumber())
+      this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountTooSellBn).toNumber()})  
+      this.setState({inputValue: 1.01 * this.state.optionPairDetails.strike /
+         this.state.optionPairDetails.underlyingQty}) //default price is strike + 1%
     } else {
       
       this.setState({exchangeUnderlyingPrice: 0.0})

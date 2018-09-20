@@ -163,14 +163,14 @@ export const getRequestHandlerInstance = async () => {
     }
 }
 
-export const getExchangeAdapterAddress = async () => {
+export const getExchangeAdapterAddress = () => {
   /* let exchangeAdapter = await getContractInstance(jsonExchangeAdapterOasisImpl, "0x898db49742a048cd33da8905db74049e251c26c9625cad59d9ddf17f9b46cb32")
   return exchangeAdapter.address */
   return "0x8ed810aa9a23f896100184bb51db56af11115061"
 }
 
 export const getExchangeAdapter =  async () => 
-  getContractInstance(jsonExchangeAdapterOasisImpl, await getExchangeAdapterAddress())
+  getContractInstance(jsonExchangeAdapterOasisImpl,  await getExchangeAdapterAddress())
 
 export const getDefaultFeeCalculatorAddress = async () => {
   let optFactory = await getOptionFactoryInstance()
