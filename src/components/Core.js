@@ -10,6 +10,9 @@ const jsonTokenOption = require("solidity-contracts/TokenOption.json")
 const jsonTokenAntiOption = require("solidity-contracts/TokenOption.json")
 const jsonOptionPair = require("solidity-contracts/OptionPair.json")
 const jsonFeeCalculator = require("solidity-contracts/IFeeCalculator.json")
+const jsonRequestHandler = require("solidity-contracts/OSDirectRequestHandler.json")
+const jsonOptionSerieToken = require("solidity-contracts/OptionSerieToken.json")
+const jsonExchangeAdapterOasisImpl = require("solidity-contracts/ExchangeAdapterOasisImpl.json") 
 
 export const TOPIC_AFFECTED_BALANCES = 'affected_balances'
 
@@ -60,7 +63,7 @@ export const promisify = (inner) => {
     );
 }
 
-const getContractInstance = async(json, address) => {
+export const getContractInstance = async(json, address) => {
   let contract = getWeb3().eth.contract(json.abi)
   if (address) {
     return contract.at(address)
@@ -133,6 +136,10 @@ export const getErc20At = async (token) => {
   return getContractInstance(jsonERC20, token)
 }
 
+export const getFeeCalculatorAt = async (calcAddress) => {
+  return getContractInstance(jsonFeeCalculator, calcAddress)
+}
+
 export const getOptionFactoryInstance = async () => {
   let netId = await getNetworkId()
   //console.log(netId)
@@ -140,10 +147,35 @@ export const getOptionFactoryInstance = async () => {
     case 3: //ropsten
       return getContractInstance(jsonOptionFactory, "0xb7b68150022054daf980461a99d19d807afa8ca0")
     case 42: //kovan
-      return getContractInstance(jsonOptionFactory, "0xc07893435202f6a3434bd5afd36c0d415a8a0c90")
+      return getContractInstance(jsonOptionFactory, "0x7a2637f799e183e276cc077c300bbff6f78df075")
     default:
       return getContractInstance(jsonOptionFactory)
     }
+}
+
+export const getRequestHandlerInstance = async () => {
+  let netId = await getNetworkId()
+  switch (Number(netId)) {
+    case 42: //kovan
+      return getContractInstance(jsonRequestHandler, "0x80f9d6fb9b6d539f5a48fa27404e82e97d532ef4")
+    default:
+      return getContractInstance(jsonRequestHandler)
+    }
+}
+
+export const getExchangeAdapterAddress = () => {
+  /* let exchangeAdapter = await getContractInstance(jsonExchangeAdapterOasisImpl, "0x898db49742a048cd33da8905db74049e251c26c9625cad59d9ddf17f9b46cb32")
+  return exchangeAdapter.address */
+  return "0x8ed810aa9a23f896100184bb51db56af11115061"
+}
+
+export const getExchangeAdapter =  async () => 
+  getContractInstance(jsonExchangeAdapterOasisImpl,  await getExchangeAdapterAddress())
+
+export const getDefaultFeeCalculatorAddress = async () => {
+  let optFactory = await getOptionFactoryInstance()
+  console.log (optFactory);
+  return promisify((cb) => optFactory.feeCalculator(cb))
 }
 
 export const getOptionPairInstance = (address) => {
@@ -160,6 +192,10 @@ export const getTokenAntiOptionInstance = (address) => {
 
 export const getFeeCalculatorInstance = (address) => {
   return getContractInstance(jsonFeeCalculator, address)
+}
+
+export const getOptionSerieToken = () => {
+  return getContractInstance(jsonOptionSerieToken)
 }
 
 export const onMined = (transNo, callback)  => {
@@ -179,9 +215,14 @@ export const onMined = (transNo, callback)  => {
     })
 }
 
-export const getBalance = async (token) => {
+export const getEthBalance = async () => {
+  let account = await getAccount()
+  return promisify(cb => web3.eth.getBalance(account, cb))
+}
+
+export const getBalance = async (token, accountOf) => {
     let erc20 = await getErc20At(token)
-    let account = await getAccount()
+    let account = accountOf || (await getAccount())
     try {
       const balBigNumber = await promisify(cb =>  erc20.balanceOf(account, cb))
       return balBigNumber.dividedBy(DECIMAL_FACTOR).toNumber()

@@ -4,6 +4,7 @@
   "description": "UI for eth_option",
   "scripts": {
     "config-ropsten": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp deployment/ropsten/* ${TARGET_DIR}/",
+    "config-kovan": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp deployment/kovan/* ${TARGET_DIR}/",
     "config-webtest": "TARGET_DIR=node_modules/solidity-contracts;  mkdir -p ${TARGET_DIR} && rm -f ${TARGET_DIR}/* && cp ../eth_option/build/contracts/* ${TARGET_DIR}/",
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -11,7 +12,8 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "deploy-s3": "rm -rf build/; npm run build && npm run config-ropsten && aws s3 sync build/ s3://www.erc20-options.com"
+    "deploy-s3": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://www.erc20-options.com",
+    "deploy-s3-test": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://test.erc20-options.com" 
   },
   "repository": {
     "type": "git",
@@ -29,14 +31,14 @@
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
     "pubsub-js": "^1.6.0",
-    "react": "^16.3.2",
-    "react-bootstrap": "^0.32.1",
+    "react": "^16.4.2",
+    "react-bootstrap": "^0.32.3",
     "react-day-picker": "^7.0.7",
-    "react-dom": "^16.3.2",
+    "react-dom": "^16.4.2",
     "react-router": "^4.3.1",
     "react-router-bootstrap": "^0.24.4",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "1.0.17",
+    "react-scripts": "1.1.5",
     "react-web3": "^0.4.5",
     "truffle-contract": "^3.0.5",
     "web3": "^0.20.6",

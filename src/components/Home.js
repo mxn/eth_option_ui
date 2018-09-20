@@ -2,6 +2,7 @@ import {ExternalLink, ConceptLink} from './Commons.js'
 
 import React, { Component } from 'react'
 import {Jumbotron} from 'react-bootstrap'
+import {Link} from 'react-router-dom'
 
 
 export default class Home extends Component {
@@ -15,10 +16,10 @@ export default class Home extends Component {
             <p>The more details can be read in the <ConceptLink/>
             </p>
             <p>
-            Currently, you can play the demo on <strong>Try It!</strong> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
+            Currently, you can play the demo on <Link to="app/option-table">Try It!</Link> tab. You need a web3-enabled browser (e.g. with installed <ExternalLink href="https://metamask.io/" a="Metamask extension"/>). Please use <ExternalLink href="kova.ethrescan.io" a="kovan"/> network
             </p>
             <p>
-            Under <strong>Help</strong> tab you can find the screencasts with the examples of option operations, inclusive OTC trading. For OTC trading one can use <ExternalLink href="https://0xproject.com/portal/generate" a="this 0x portal link"/>
+            Under <Link to="help">Help</Link>  tab you can find the screen-casts with the examples of option operations, inclusive OTC trading. For OTC trading one can use <ExternalLink href="https://0xproject.com/portal/generate" a="this 0x portal link"/>
             </p>
             <p>
               To get some ETH one can use <ExternalLink href="https://github.com/kovan-testnet/faucet" a="Kovan Faucet"/>
@@ -35,10 +36,11 @@ export default class Home extends Component {
                 only hte owner is allowed to do this. It could be implememted as ERC721 based
                 rights to create option series. The ERC721 tokens can be purchased via auction.
                 Incentives to create option series is collection the fees,
-                which are taken by option writing</li>
+                which are taken by option writing - <strong>Partially DONE: ERC721 token for Option Serie is generated. 
+                  Owner of the token has right to withdraw fees, collected by option writing</strong></li>
                 <li>Creation possibility to exercise and sell underlying via exchange
                 in one transaction. It will allow the options owner to perform
-                the operation without full coverage of the exercised amount</li>
+                the operation without full coverage of the exercised amount - <strong>DONE</strong></li>
                 <li>Make the option tokens ERC821 compatible to simplify option
                 operations which are currently required to execute separate approve
                 tarnsactions for option and

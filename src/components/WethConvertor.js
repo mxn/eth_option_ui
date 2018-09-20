@@ -1,8 +1,7 @@
 import {promisify, setStatePropFromEvent,
   getWethInstance, getWeb3, getReceipt, TOPIC_AFFECTED_BALANCES, isTransEnabled,
-  publishTokenMutation, getBalance, getAccount, getDefaultTransObj} from './Core'
-import TransactionStatus from './TransactionStatus'
-import NumberEntryGroup from './NumberEntryGroup'
+  publishTokenMutation, getBalance, getEthBalance, getAccount, getDefaultTransObj} from './Core'
+import NumberEntryGroup  from './NumberEntryGroupRo'
 
 import PubSub from 'pubsub-js'
 import React, { Component } from 'react'
@@ -44,7 +43,9 @@ export default class WethConvertor extends Component {
 
   async refreshBalances() {
     let wethInstance = await getWethInstance()
-    const balEth = await getBalance(this.state.account)
+    const balEth = await getEthBalance()
+    console.log("balEth", balEth)
+    console.log("acc", this.state.account)
     this.setState({currentBalanceEth: this.web3utils
       .toDecimal(this.web3utils.fromWei(balEth,"ether"))})
     this.setState({currentBalanceWeth:
@@ -100,22 +101,19 @@ export default class WethConvertor extends Component {
           </Col>
         </Row>
         <Row>
-          <TransactionStatus transactionHash={this.state.transactionHash}/>
-        </Row>
-        <Row>
           <Col sm={6}>
-            <NumberEntryGroup label="Wrap ETH" button="-> WETH"
-              onClick={v => this.convertEth(v)}
-              max={this.state.currentBalanceEth}
+            <NumberEntryGroup key="1" label="Wrap ETH" button="-> WETH"
+              onClick={(v) => this.convertEth(v)}
+              maxValue={this.state.currentBalanceEth}
               placeholder="Please enter amount of ETH to be converted"
             />
           </Col>
         </Row>
         <Row>
           <Col sm={6}>
-            <NumberEntryGroup label="Un-wrap ETH" button="-> ETH"
+            <NumberEntryGroup key="2" label="Un-wrap ETH" button="-> ETH"
               onClick={v => this.unwarpWeth(v)}
-              max={this.state.currentBalanceWeth}
+              maxValue={this.state.currentBalanceWeth}
             />
           </Col>
         </Row>

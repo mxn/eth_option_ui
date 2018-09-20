@@ -1,16 +1,94 @@
-import {getBalance, getOptionFactoryInstance, isTransEnabled,
+import {
+  getBalance, getOptionFactoryInstance, isTransEnabled,
   getOptionPairInstance, DECIMAL_FACTOR, getReceipt, TOPIC_AFFECTED_BALANCES,
   publishTokenMutation, web3utils, promisify, getDefaultTransObj,
-  getAllowance, getFeeCalculatorInstance, getTokenName}  from './Core'
+  getAllowance, getFeeCalculatorInstance, getTokenName, getExchangeAdapterAddress, getExchangeAdapter, 
+  getFeeCalculatorAt
+} from './Core'
 
 import React, { Component } from 'react'
 import PubSub from 'pubsub-js'
-import {DropdownButton, MenuItem, FormGroup, InputGroup, FormControl, Modal,
-  Button} from 'react-bootstrap'
+import {
+  DropdownButton, MenuItem, FormGroup, InputGroup, FormControl, Modal,
+  Button, Row} from 'react-bootstrap'
 
-const WRITE = "WRITE", ANNIHILATE = "ANNIHILATE", EXERCISE="EXERCISE", WITHDRAW="WITHDRAW"
+const WRITE = "WRITE", WRITE_FEE_ETH= "WRITE_FEE_ETH", ANNIHILATE = "ANNIHILATE", EXERCISE = "EXERCISE", EXERCISE_EXCHANGE = "EXERCISE_EXCHANGE", WITHDRAW = "WITHDRAW"
 
 const serieTokens = ["underlying", "basisToken", "tokenOption", "tokenAntiOption"]
+
+const InputPrice = ({ onChange, show, value, onOk, onCancel, price }) => {
+  if (!show) {
+    return null
+  }
+  return (
+    <Modal.Dialog>
+      <Modal.Header>
+        Enter minimum price for excahnge
+      </Modal.Header>
+      <Modal.Body>
+        <Row>
+          Enter a minimum price for Oasis Exchange (current price is {price}), for which you are ready to sell underlying. 
+          Note that the price should not be less as strike price! 
+        </Row>
+        <Row>
+          <FormGroup>
+            <InputGroup>
+              <FormControl type="number" value={value}
+                onChange={(ev) => {
+                  onChange(ev.target.value)
+                }} />
+            </InputGroup>
+            <Button bsStyle="success" onClick={onOk}>OK</Button>
+            <Button onClick={onCancel}>Close</Button>
+          </FormGroup>
+        </Row>
+      </Modal.Body>
+    </Modal.Dialog>
+
+  )
+}
+
+const ActionDialog = ({ caution, onCancel }) => {
+  if (!caution) {
+    return (<div />)
+  }
+  const { title, body, isError, onOk } = caution
+
+  return (
+    <Modal.Dialog bsStyle="danger">
+      <Modal.Header>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        {body}
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button bsStyle="success" onClick={onOk} disabled={isError}>OK</Button>
+        <Button onClick={onCancel}>Close</Button>
+      </Modal.Footer>
+    </Modal.Dialog>)
+}
+
+function getCautionMessage(conditions) {
+  if (conditions.every(el => el[0])) {
+    return null
+  }
+  return conditions.reduce((prevString, el) => el[0] ? prevString : `${prevString}${el[1]}. `, "") || {}
+}
+
+function getCaution(conditions, title, isError) {
+  let cautionMsg = getCautionMessage(conditions)
+  if (cautionMsg) {
+    return {
+      title: title,
+      isError: isError,
+      body: cautionMsg
+    }
+  }
+  return null
+}
 
 export default class OptionActions extends Component {
   constructor(props) {
@@ -18,57 +96,75 @@ export default class OptionActions extends Component {
     this.state = {
       isLoading: false,
       value: 0,
-      availableActions: []}
-  }
+      availableActions: [],
+      showExchDialog: false,
+      inputShow: false,
+      inputValue: 0,
+      inputOnOk: async () => {
 
-  async componentWillMount() {
-    this.actions = {WRITE: this.writeOptions,
-        EXERCISE: this.exerciseOptions,
-        WITHDRAW: this.withdrawOptions,
-        ANNIHILATE: this.annihilateOptions}
-    this.actionToLabel = Object.keys(this.actions)
-      .reduce((prev, el) => {prev[el] =  el.substring(0,1) + el.substring(1).toLowerCase(); return prev}, {})
-    await this.setAddresses()
-    await Promise.all([this.setBalances(), this.setAllowances(),
-      this.setOptionPairDetails()])
-    this.actionToLabel["Withdraw"] = "Withdraw All"
-      this.setState({availableActions: await this.getAvailableActions()})
-
+        this.setState({ inputShow: false, isLoading: true })
+        try {
+          await this.exerciseOptionsWithExchange(this.state.inputValue)
+        } finally {
+          publishTokenMutation(serieTokens.map(name => this.state.addresses[name]))
+          this.setState({ isLoading: false })
+        }
+      },
+      inputOnCancel: () => this.setState({ inputShow: false, isLoading: false })
+    }
   }
 
   async componentDidMount() {
+    this.actions = {
+      WRITE: this.writeOptions,
+      WRITE_FEE_ETH: this.withdrawOptionsWithFeeInEth,
+      EXERCISE: this.exerciseOptions,
+      EXERCISE_EXCHANGE: this.exerciseOptionsWithExchange,
+      WITHDRAW: this.withdrawOptions,
+      ANNIHILATE: this.annihilateOptions
+    }
+    this.actionToLabel = Object.keys(this.actions)
+      .reduce((prev, el) => { prev[el] = el.substring(0, 1) + el.substring(1).toLowerCase(); return prev }, {})
+    this.actionToLabel[EXERCISE_EXCHANGE] = "Exercise with exchange"
+    this.actionToLabel[WRITE_FEE_ETH] = "Write"
+    await this.setAddresses()
+    await Promise.all([this.setBalances(), this.setAllowances(),
+    this.setOptionPairDetails()])
+    this.setState({ availableActions: await this.getAvailableActions() })
+    this.setExchangeUnderlyingPrice()
     this.subscriber = PubSub.subscribe(TOPIC_AFFECTED_BALANCES,
       async () => {
-        this.setState({availableAction: await this.getAvailableActions()})
+        this.setState({ availableAction: await this.getAvailableActions() })
         this.setBalances()
         this.setAllowances()
+        this.setExchangeUnderlyingPrice()
       })
   }
 
   async setAddresses() {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
-    let addresses =  await Promise.all(serieTokens.map( (token) =>
-        promisify(cb => optionPair[token].call(cb))))
+    let addresses = await Promise.all(serieTokens.map((token) =>
+      promisify(cb => optionPair[token].call(cb))))
     let res = {}
     serieTokens.forEach((el, i) => res[el] = addresses[i])
-    this.setState({addresses: res})
+    this.setState({ addresses: res })
   }
 
   async setBalances() {
     let balances = await Promise.all(Object.keys(this.state.addresses)
-      .map(token =>  getBalance(this.state.addresses[token])))
+      .map(token => getBalance(this.state.addresses[token])))
     let res = {}
     serieTokens.forEach((el, i) => res[el] = balances[i])
-    this.setState({balances: res})
+    this.setState({ balances: res })
   }
 
   async setAllowances() {
     let optionFactory = await getOptionFactoryInstance()
     let allowances = await Promise.all(Object.keys(this.state.addresses)
-      .map(token => getAllowance(this.state.addresses[token], (token === "tokenOption" || token === "tokenAntiOption")? this.props.optionPairAddress : optionFactory.address )))
+      .map(token => getAllowance(this.state.addresses[token], (token === "tokenOption" || token === "tokenAntiOption") ? this.props.optionPairAddress : optionFactory.address)))
     let res = {}
     serieTokens.forEach((el, i) => res[el] = allowances[i])
-    this.setState({allowances: res})
+    this.setState({ allowances: res })
   }
 
   async setOptionPairDetails() {
@@ -77,8 +173,33 @@ export default class OptionActions extends Component {
     let optionPairDetails = await Promise.all(optionPairProps
       .map(async prop => await promisify(cb => optionPair[prop].call(cb))))
     let res = {}
-    optionPairProps.forEach((el, i) => res[el] = web3utils.toDecimal(optionPairDetails[i]))
-    this.setState({optionPairDetails: res})
+    optionPairProps.forEach((el, i) => res[el] =  web3utils.toDecimal(optionPairDetails[i]))
+    this.setState({ optionPairDetails: res })
+  }
+
+  async setExchangeUnderlyingPrice() {
+    if (this.state.optionPairDetails 
+      && this.state.addresses.underlying 
+      && this.state.addresses.basisToken) {
+      let exchangeAdapter = await getExchangeAdapter()
+      let underlyingAmountToSell = this.state.balances.tokenOption / this.state.optionPairDetails.underlyingQty
+      let underlyingAmountTooSellBn =  DECIMAL_FACTOR.mul(underlyingAmountToSell)
+      let amountToGet = await promisify(cb => exchangeAdapter
+        .getAmountToGet(this.state.addresses.underlying, 
+          underlyingAmountTooSellBn,  
+          this.state.addresses.basisToken,
+        cb))
+        console.log([this.state.addresses.underlying, 
+          underlyingAmountTooSellBn, 
+        this.state.addresses.basisToken])
+      console.log("amount to get: ", amountToGet.toNumber())
+      this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountTooSellBn).toNumber()})  
+      this.setState({inputValue: 1.01 * this.state.optionPairDetails.strike /
+         this.state.optionPairDetails.underlyingQty}) //default price is strike + 1%
+    } else {
+      
+      this.setState({exchangeUnderlyingPrice: 0.0})
+    }
   }
 
   async getFee() {
@@ -86,7 +207,7 @@ export default class OptionActions extends Component {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
     let feeCalcAddress = await promisify(cb => optionPair.feeCalculator(cb))
     let feeCalculator = await getFeeCalculatorInstance(feeCalcAddress)
-    return  promisify(cb => feeCalculator.calcFee(feeCalcAddress, amountToWrite, cb))
+    return promisify(cb => feeCalculator.calcFee(feeCalcAddress, amountToWrite, cb))
   }
 
   async getAvailableActions() {
@@ -95,32 +216,37 @@ export default class OptionActions extends Component {
 
     return Object.keys(this.actions)
       .filter((action) => {
-         switch(action) {
-           case WITHDRAW:
+        switch (action) {
+          case WITHDRAW:
             return (new Date()) > expireTime * 1000
-           default:
+          default:
             return (new Date()) < expireTime * 1000
-         }
-       })
+        }
+      })
       .filter((action) => {
-         switch(action) {
-           case WRITE:
+        switch (action) {
+          case WRITE_FEE_ETH: //pay directly with ETH
             return true
-           case EXERCISE:
+          case WRITE:
+            return false //currently temporary disabled, as we pay fee in ETH
+          case EXERCISE_EXCHANGE:
+          case EXERCISE:
             return this.state.balances.tokenOption > 0 &&
               this.state.balances.basisToken > 0
-           case ANNIHILATE:
+          case ANNIHILATE:
             return this.state.balances.tokenOption > 0 &&
               this.state.balances.tokenAntiOption > 0
-           case WITHDRAW:
+          case WITHDRAW:
             return this.state.balances.tokenAntiOption > 0
-           default:
-            throw new Error (`Unknown action ${action}`)
-         }
-       })
+          default:
+            throw new Error(`Unknown action ${action}`)
+        }
+      })
   }
 
-  async getWriteCaution() {
+
+
+  async getWriteCaution(isFeeInEth) {
     var feeTokenAddress, fee
     [feeTokenAddress, fee] = await this.getFee()
     let feeDecimal = fee.dividedBy(DECIMAL_FACTOR).toNumber()
@@ -130,24 +256,31 @@ export default class OptionActions extends Component {
         this.state.optionPairDetails.underlyingQty,
       `Not enough balance (${this.state.balances.underlying},
         need  ${this.state.value *
-           this.state.optionPairDetails.underlyingQty}) of underlying`],
+      this.state.optionPairDetails.underlyingQty}) of underlying`],
       [this.state.allowances.underlying >= this.state.value *
         this.state.optionPairDetails.underlyingQty,
-        `Not enough allowance (${this.state.allowances.underlying}
+      `Not enough allowance (${this.state.allowances.underlying}
           , need  ${this.state.value * this.state.optionPairDetails.underlyingQty})
           of underlying`]
     ]
-    if (conditions.every(el => el[0])) {
-      return {
-        title: "Write Option",
-        body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${feeTokenName}`
-      }
+    console.log(isFeeInEth)
+    let caution = getCaution(conditions, "You cannot write requested amount!", true)
+    return caution ? caution : {
+      title: "Write Option",
+      body: `You are about to deposit ${this.state.optionPairDetails.underlyingQty * this.state.value} underlying and pay fee ${feeDecimal} ${isFeeInEth ? 'ETH' :feeTokenName }`
     }
-    return {
-      title: "You cannot write requesed amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+  }
+
+  getExerciseExchangeCaution() {
+    let conditions = [
+      [this.state.balances.tokenOption >= this.state.value * 1.0,
+      `Not enough balance (${this.state.balances.tokenOption},
+        need ${this.state.value}) of Option tokens`],
+      [this.state.allowances.tokenOption >= this.state.value * 1.0,
+      `Not enough allowance (${this.state.allowances.tokenOption}
+          , need  ${this.state.value})
+          of Option tokens`]]
+    return getCaution(conditions, "You cannot exercise options", true)
   }
 
   getAnnihilateCaution() {
@@ -156,55 +289,40 @@ export default class OptionActions extends Component {
       `Not enough balance (${this.state.balances.tokenOption},
         need ${this.state.value})`],
       [this.state.balances.tokenAntiOption >= this.state.value * 1.0,
-        `Not enough balance (${this.state.balances.tokenAntiOption},
+      `Not enough balance (${this.state.balances.tokenAntiOption},
           need  ${this.state.value}) of Anti-Option tokens`],
-      [this.state.allowances.tokenOption >= this.state.value,
-        `Not enough allowance (${this.state.allowances.tokenOption}
+      [this.state.allowances.tokenOption >= this.state.value * 1.0,
+      `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`],
-      [this.state.allowances.tokenOption >= this.state.value,
-          `Not enough allowance (${this.state.allowances.tokenAntiOption}
+      [this.state.allowances.tokenAntiOption >= this.state.value * 1.0,
+      `Not enough allowance (${this.state.allowances.tokenAntiOption}
             , need  ${this.state.value})
             of Anti-Option tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot annihilate requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    return getCaution(conditions, "You cannot annihilate requested amount!", true)
   }
 
   getExerciseCaution() {
-    console.log("getExerciseCaution")
-    console.log(this.state.optionPairDetails)
     let conditions = [
       [this.state.balances.tokenOption >= this.state.value * 1.0,
       `Not enough balance (${this.state.balances.tokenOption},
         need ${this.state.value})`],
       [this.state.allowances.tokenOption >= this.state.value * 1.0,
-        `Not enough allowance (${this.state.allowances.tokenOption}
+      `Not enough allowance (${this.state.allowances.tokenOption}
           , need  ${this.state.value})
           of Option tokens`],
       [this.state.allowances.basisToken >= this.state.value * this.state.optionPairDetails.strike,
-        `Not enough allowance (${this.state.allowances.basisToken}
+      `Not enough allowance (${this.state.allowances.basisToken}
           , need  ${this.state.value * this.state.optionPairDetails.strike})
           of quotation token`],
       [this.state.balances.basisToken >= this.state.value * this.state.optionPairDetails.strike,
-        `Not enough balance (${this.state.balances.basisToken}
+      `Not enough balance (${this.state.balances.basisToken}
           , need  ${this.state.value * this.state.optionPairDetails.strike})
           of quotation tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot exercise requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    console.log("getCaution", getCaution(conditions, "You cannot exercise requested amount!", true))
+    return getCaution(conditions, "You cannot exercise requested amount!", true)
   }
 
   getWithdrawCaution() {
@@ -213,49 +331,62 @@ export default class OptionActions extends Component {
       `Not enough balance (${this.state.balances.tokenAntiOption},
         need ${this.state.value})`],
       [this.state.allowances.tokenAntiOption >= this.state.value * 1.0,
-        `Not enough allowance (${this.state.allowances.tokenAntiOption}
+      `Not enough allowance (${this.state.allowances.tokenAntiOption}
           , need  ${this.state.value})
           of Option tokens`]
     ]
-    if (conditions.every(el => el[0])) {
-      return null
-    }
-    return {
-      title: "You cannot withdraw requested amount!",
-      isError: true,
-      body: conditions.reduce((prevString, el) => el[0]? prevString : `${prevString}${el[1]}. `, "")
-    }
+    return getCaution(conditions, "You cannot withdraw requested amount!", true)
   }
 
   async onSelect(ek) {
-    this.setState({isLoading: true})
+    this.setState({ isLoading: true })
     let fnToExec = async () => {
       let trans = await this.actions[ek].bind(this)()
       await getReceipt(trans)
       let mutatedAddresses = serieTokens.map(name => this.state.addresses[name])
       publishTokenMutation(mutatedAddresses)
-      this.setState({isLoading: false, value: 0})
+      this.setState({ isLoading: false, value: 0 })
     }
-    let makeWithCaution =  (caution) => {
+    let makeWithCaution = (caution) => {
       if (caution) {
         console.log("Caution is detected")
-        caution.onOk = () => fnToExec()
+        caution.onOk = (() => {
+          fnToExec()
+          this.setState({ caution: false })
+        })
       }
-      this.setState({caution: caution})
+      this.setState({ caution: caution ? caution : false })
       if (!caution) {
         fnToExec()
+      }
+    }
+    let makeWithCautionAndInput = (caution) => {
+      if (caution) {
+        caution.onOk = (() => {
+          this.setState({ inputShow: true, caution: false })
+        })
+      }
+      this.setState({ caution: caution ? caution : false })
+      if (!caution) {
+        this.setState({ inputShow: true, caution: false })
       }
     }
     switch (ek) {
       case WRITE:
         makeWithCaution(await this.getWriteCaution())
         break
+      case WRITE_FEE_ETH:
+        makeWithCaution(await this.getWriteCaution(true))
+        break
       case ANNIHILATE:
         makeWithCaution(this.getAnnihilateCaution())
         break
       case EXERCISE:
-          makeWithCaution(this.getExerciseCaution())
-          break
+        makeWithCaution(this.getExerciseCaution())
+        break
+      case EXERCISE_EXCHANGE:
+        makeWithCautionAndInput(this.getExerciseExchangeCaution())
+        break
       default: fnToExec()
     }
   }
@@ -265,19 +396,36 @@ export default class OptionActions extends Component {
     let transObj = await getDefaultTransObj()
     return promisify(cb => optionFactory.writeOptions(this.props.optionPairAddress,
       web3utils.toBigNumber(this.state.value).mul(DECIMAL_FACTOR),
-        transObj, cb))
+      transObj, cb))
+  }
+
+  async withdrawOptionsWithFeeInEth() {
+    let amountToWrite = web3utils.toBigNumber(this.state.value).mul(DECIMAL_FACTOR)
+    let optionFactory = await getOptionFactoryInstance()
+    let optionPair = await getOptionPairInstance(this.props.optionPairAddress)  
+    let feeCalculatorAddress = await promisify(cb =>  optionPair.feeCalculator(cb))
+    let feeCalculator = await getFeeCalculatorAt(feeCalculatorAddress) 
+    var feeTokenAddress, feeAmount
+    [feeTokenAddress, feeAmount]  = await promisify(cb => 
+      feeCalculator.calcFee(optionPair.address, amountToWrite, cb))
+    console.log("feeTokenAddress", feeTokenAddress)
+    let transObj = await getDefaultTransObj()
+    transObj["value"] = feeAmount
+    return promisify(cb => optionFactory.writeOptionsWithEth(this.props.optionPairAddress, amountToWrite,
+      transObj, cb))
   }
 
   async annihilateOptions() {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
     let transObj = await getDefaultTransObj()
     return promisify(cb => optionPair.annihilate(
-         DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
+      DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
   }
 
   async withdrawOptions() {
     let optionPair = await getOptionPairInstance(this.props.optionPairAddress)
     let transObj = await getDefaultTransObj()
+    transObj["gas"] = 300000
     return promisify(cb => optionPair.withdrawAll(transObj, cb))
   }
 
@@ -285,64 +433,55 @@ export default class OptionActions extends Component {
     let optionFactory = await getOptionFactoryInstance()
     let transObj = await getDefaultTransObj()
     return promisify(cb => optionFactory.exerciseOptions(this.props.optionPairAddress,
-        DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
+      DECIMAL_FACTOR.mul(this.state.value), transObj, cb))
+  }
+
+  async exerciseOptionsWithExchange(minPrice) {
+    console.log("exerciseOptionsWithExchange", minPrice)
+    return Promise.all([getOptionPairInstance(this.props.optionPairAddress),
+      getExchangeAdapterAddress(),
+      getDefaultTransObj()])
+      .then(
+        async (arr) => {
+          var optionPair, exchAddr, transObj
+          [optionPair, exchAddr, transObj] = arr
+          let underlyingQty = await promisify(cb => optionPair.underlyingQty(cb))
+          let minPrice = this.state.inputValue
+          let amountToGive = DECIMAL_FACTOR.mul(this.state.value)
+          let minAmountToGet = amountToGive.mul(underlyingQty).mul(minPrice)
+          return promisify(cb => optionPair.exerciseWithTrade(
+            amountToGive, minAmountToGet, exchAddr,transObj, cb))
+        })
   }
 
   async componentWillUnmount() {
     this.subscriber = PubSub.unsubscribe(TOPIC_AFFECTED_BALANCES)
   }
 
-  getCaution = (props) => {
-    if (!this.state.caution) {
-      return null
-    }
-    console.log(this.state)
-
-    console.log(this.state.caution)
-    return(
-      <Modal.Dialog bsStyle="danger">
-        <Modal.Header>
-          <Modal.Title>{this.state.caution.title}</Modal.Title>
-        </Modal.Header>
-
-        <Modal.Body>{this.state.caution.body}</Modal.Body>
-
-        <Modal.Footer>
-          <Button bsStyle="success" onClick={() => {
-            let fn = this.state.caution.onOk
-            this.setState({caution: null})
-            fn()}
-          } disabled={this.state.caution.isError}>OK</Button>
-          <Button  onClick={() =>   this.setState({caution: null,
-            isLoading: false})}>Close</Button>
-        </Modal.Footer>
-      </Modal.Dialog>)
-
-  }
-
-  render () {
-    let Caution = this.getCaution
+  render() {
     return (
       <div>
-        <Caution/>
+        <ActionDialog caution={this.state.caution} onCancel={() => this.setState({ caution: false, isLoading: false })} />
+        <InputPrice onChange={v => this.setState({ inputValue: v })} value={this.state.inputValue} show={this.state.inputShow} onOk={this.state.inputOnOk} onCancel={this.state.inputOnCancel}
+        price={this.state.exchangeUnderlyingPrice} />
         <FormGroup>
-         <InputGroup>
-           <FormControl type="number" value={this.state.value} disabled={this.state.isLoading || !isTransEnabled()} onChange={(ev) => this.setState({value: ev.target.value})}/>
-             <DropdownButton
-               className="dropdown-action"
-               componentClass={InputGroup.Button} bsStyle={this.state.isLoading ? "warning" : "success"}
-               id={`dropdown_${this.props.optionPairAddress}`}
-               key={`dropdown_${this.props.optionPairAddress}`}
-               onSelect={(eventKey) => this.onSelect(eventKey)}
-               disabled = {this.state.value === 0 ||
-                 this.state.availableActions.length === 0 ||
-                 this.state.isLoading || !isTransEnabled()}
-               title={this.state.isLoading ?  "Processing" : "Action"}>
-               {this.state.availableActions.map((key, i) => {
-                 return <MenuItem key={"mu_" + i} eventKey={key}>{this.actionToLabel[key]}</MenuItem>
-               })}
-             </DropdownButton>
-         </InputGroup>
+          <InputGroup>
+            <FormControl type="number" value={this.state.value} disabled={this.state.isLoading || !isTransEnabled()} onChange={(ev) => this.setState({ value: ev.target.value })} />
+            <DropdownButton
+              className="dropdown-action"
+              componentClass={InputGroup.Button} bsStyle={this.state.isLoading ? "warning" : "success"}
+              id={`dropdown_${this.props.optionPairAddress}`}
+              key={`dropdown_${this.props.optionPairAddress}`}
+              onSelect={(eventKey) => this.onSelect(eventKey)}
+              disabled={this.state.value === 0 ||
+                this.state.availableActions.length === 0 ||
+                this.state.isLoading || !isTransEnabled()}
+              title={this.state.isLoading ? "Processing" : "Action"}>
+              {this.state.availableActions.map((key, i) => {
+                return <MenuItem key={"mu_" + i} eventKey={key}>{this.actionToLabel[key]}</MenuItem>
+              })}
+            </DropdownButton>
+          </InputGroup>
         </FormGroup>
       </div>)
   }
