@@ -183,19 +183,32 @@ export default class OptionActions extends Component {
       && this.state.addresses.basisToken) {
       let exchangeAdapter = await getExchangeAdapter()
       let underlyingAmountToSell = this.state.balances.tokenOption / this.state.optionPairDetails.underlyingQty
-      let underlyingAmountTooSellBn =  DECIMAL_FACTOR.mul(underlyingAmountToSell)
-      let amountToGet = await promisify(cb => exchangeAdapter
-        .getAmountToGet(this.state.addresses.underlying, 
-          underlyingAmountTooSellBn,  
-          this.state.addresses.basisToken,
-        cb))
-        console.log([this.state.addresses.underlying, 
-          underlyingAmountTooSellBn, 
-        this.state.addresses.basisToken])
-      console.log("amount to get: ", amountToGet.toNumber())
-      this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountTooSellBn).toNumber()})  
-      this.setState({inputValue: 1.01 * this.state.optionPairDetails.strike /
-         this.state.optionPairDetails.underlyingQty}) //default price is strike + 1%
+    
+      var underlyingAmountTooSellBn =  DECIMAL_FACTOR.mul(underlyingAmountToSell)
+      var amountToGet = 0
+      try {
+        if (underlyingAmountTooSellBn.toNumber() === 0 || isNaN(underlyingAmountTooSellBn.toNumber())) {
+          underlyingAmountTooSellBn = 100 //for price calculation
+          console.debug("assign 100")
+        }
+        amountToGet = await promisify(cb => exchangeAdapter
+          .getAmountToGet(this.state.addresses.underlying, 
+            underlyingAmountTooSellBn,  
+            this.state.addresses.basisToken,
+          cb))
+        console.debug("amount to get: ", amountToGet.toNumber())
+        this.setState({exchangeUnderlyingPrice: amountToGet.div(underlyingAmountTooSellBn).toNumber()})  
+        this.setState({inputValue: 1.01 * this.state.optionPairDetails.strike /
+        this.state.optionPairDetails.underlyingQty}) //default price is strike + 1%
+      } catch (e) {
+        console.warn("Problem by price calculation", e)
+        this.setState({exchangeUnderlyingPrice: 0.0})  
+        this.setState({inputValue: 0.0})
+      }
+      
+      
+      
+      
     } else {
       
       this.setState({exchangeUnderlyingPrice: 0.0})
