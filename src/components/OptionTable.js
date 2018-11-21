@@ -22,7 +22,7 @@ class OptionDateEntry extends Component {
     <Panel.Body>
     {this.props.logEntries.map(o => {
       return (
-      <Row key={o.transactionHash}>
+      <Row key={o.optionPair}>
         <OptionTableEntry logEntry={o}/>
       </Row>)
     })}
