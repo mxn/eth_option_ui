@@ -80,7 +80,7 @@ export const getNetworkId = () => {
 
 export const getNetworkName = async () => {
   switch (Number(await getNetworkId())) {
-    case 1: return "main"
+    case 1: return "mainnet"
     case 3: return "ropsten"
     case 42: return "kovan"
     default: return "unknown development"
@@ -89,7 +89,7 @@ export const getNetworkName = async () => {
 
 export const  getEtherscanHost = async () => {
   switch (Number(await getNetworkId())) {
-    case 1: //ropsten
+    case 1: //mainnet
       return "etherscan.io"
     case 3: //ropsten
       return "ropsten.etherscan.io"

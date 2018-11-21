@@ -13,7 +13,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "deploy-s3": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://www.erc20-options.com",
-    "deploy-s3-test": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://test.erc20-options.com" 
+    "deploy-s3-test": "rm -rf build/; npm run build && npm run config-kovan && aws s3 sync build/ s3://test.erc20-options.com"
   },
   "repository": {
     "type": "git",
@@ -40,6 +40,7 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.5",
     "react-web3": "^0.4.5",
+    "request": "^2.88.0",
     "truffle-contract": "^3.0.5",
     "web3": "^0.20.6",
     "zeppelin-solidity": "1.6.0"

@@ -1,4 +1,5 @@
-import {getBalance, promisify, getOptionFactoryInstance} from './Core.js'
+import {getBalance, getOptionFactoryInstance} from './Core.js'
+import {getOptionTable} from './ModelView'
 import OptionTableEntry from './OptionTableEntry'
 import TokenDetail from './TokenDetail'
 
@@ -41,25 +42,21 @@ export default class OptionTable extends Component {
   async componentDidMount() {
     const optionFactoryInstance = await getOptionFactoryInstance()
     this.setState({optionFactory: optionFactoryInstance.address})
-    const filter =  optionFactoryInstance
-      .OptionTokenCreated({basisToken: this.props.basisToken,
-        underlying: this.props.underlying},
-        {fromBlock: 0, toBlock: 'latest'})
-    try {
-      const d = await promisify(cb => filter.get(cb))
-      this.setState({data: d,
-        underlyingBalance: await  getBalance(this.props.underlying),
-        basisBalance: await  getBalance(this.props.basisToken)
-      })
-    } finally {
-        filter.stopWatching()
-    }
-
+    //let tbl = await getOptionTable()
+    var basisBalance, underlyingBalance, optionTable
+    [basisBalance, underlyingBalance, optionTable] = await 
+      Promise.all([getBalance(this.props.underlying),  getBalance(this.props.basisToken),  getOptionTable()])
+    this.setState({
+        data: optionTable,
+        underlyingBalance: underlyingBalance,
+        basisBalance: basisBalance
+    })
   }
 
   render() {
+    console.log("optionTable in render",this.state.data)
     const groupedData = groupBy(this.state.data,
-      o => o.args.expireTime.toFixed())
+      o => o.expireTime.toFixed())
     if (!this.state.optionFactory) {
       return <div>Loading...</div>
     }
@@ -75,8 +72,8 @@ export default class OptionTable extends Component {
       </Row>
       {Object.keys(groupedData).map(dt =>
           <OptionDateEntry key={"groupDate_" + dt} date={dt}
-            logEntries={sortBy(groupedData[dt], o => o.args.strike /
-              o.args.underlyingQty)}/>)}
+            logEntries={sortBy(groupedData[dt], o => o.strike /
+              o.underlyingQty)}/>)}
       </Grid>
     )
   }

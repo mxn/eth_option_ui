@@ -21,7 +21,7 @@ export default class OptionTableEntry extends Component {
   }
 
   async componentWillMount() {
-    let o = this.props.logEntry.args
+    let o = this.props.logEntry
     this.setState({balanceUnderlying: await getBalance(o.underlying),
       balanceBasis:  await getBalance(o.basisToken)
     })
@@ -38,7 +38,7 @@ export default class OptionTableEntry extends Component {
     if (this.state.optionAddress === null|| this.state.antiOptionAddress === null) {
       return <div>Loading...</div>
     }
-    return (<PanelGroup id={`PanelGroup_${o.args.optionPair}`}>
+    return (<PanelGroup id={`PanelGroup_${o.optionPair}`}>
       <Panel  expanded={this.state.detailExpanded} onToggle={() => null}>
         <Panel.Heading>
           <Row>
@@ -46,8 +46,8 @@ export default class OptionTableEntry extends Component {
               onClick={() => this.setState({
                 detailExpanded: !this.state.detailExpanded })}>{this.state.detailExpanded ? "-" : "+"}</Button>
             </Col>
-            <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.args.strike)}</Col>
-            <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.args.underlyingQty)}</Col>
+            <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.strike)}</Col>
+            <Col sm={5} componentClass={ControlLabel}>{web3utils.toDecimal(o.underlyingQty)}</Col>
           </Row>
         </Panel.Heading>
         <Panel.Collapse>
