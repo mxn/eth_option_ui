@@ -32,7 +32,7 @@ export const getWeb3 = () => {
     web3 =  new Web3(window.web3.currentProvider)
     console.log('use current provider')
   } else {
-    web3 = new Web3(new Web3.providers.HttpProvider("https://pkovan.infura.io"))
+    web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io"))
     console.log('use fallback HttpProvider')
   }
   return web3
